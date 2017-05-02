@@ -11,5 +11,3 @@ categories: overview
 [利用GitHub Pages建立项目或个人网站](https://github.com/uolcano/blog/issues/11)
 
 [Jekyll教程](http://www.zhanxin.info/jekyll/2013-08-07-jekyll-doc-installation.html)
-
---EOF--
