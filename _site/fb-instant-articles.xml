@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title></title>
+    <link>http://localhost:4000</link>
+    <description>
+      A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff.
+    </description>
+    
+        
+            <item>
+                <title>github-pages-搭建成功</title>
+                <link>http://localhost:4000/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</link>
+                <content:encoded>
+                    <![CDATA[
+                    <p>早就有想把平时遇到的问题，还有把自己的知识积累做个总结，但是一直懒于动手，结果是，一些知识时间一长，如果用的不是很频繁的话就比较容易忘记，到写这篇博客的时候好像就有一些知识点就忘记了。前一段时间知道了github pages后就，就在网上找了个模板，修修改改，搞了一两天，笔都对前端不太了解，平时做的都是iOS，看来得找个时间看看前端了。好吧，今天就写这么点了，本来还想写写怎么建立自己的博客，不过网上已有很多相关的博客，这里我发一两篇我参考的吧。</p>
+
+<p><a href="https://github.com/uolcano/blog/issues/11">利用GitHub Pages建立项目或个人网站</a></p>
+
+<p><a href="http://www.zhanxin.info/jekyll/2013-08-07-jekyll-doc-installation.html">Jekyll教程</a></p>
+
+                    ]]>
+                </content:encoded>
+                <guid isPermaLink="false">/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</guid>
+                <description>
+                    
+                    折腾了一两天，终于把博客搭的差不多了。
+                    
+                </description>
+                <pubDate>Thu, 27 Apr 2017 00:00:00 +0800</pubDate>
+                <author>冬阳</author>
+            </item>
+        
+    
+  </channel>
+</rss>
