@@ -6,8 +6,6 @@ summary:    本文主要分析AFNetworking的数据请求部分。
 categories: objective-c AFNetworking
 ---
 
-## AFNetworking源码解读之数据请求
-
 标签： objective-c AFNetworking
 
 --- 
