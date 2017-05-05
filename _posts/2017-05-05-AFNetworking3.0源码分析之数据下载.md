@@ -63,6 +63,12 @@ typedef NSURL * (^DownloadTaskDidFinishDownloadingBlock)(NSURLSession *session, 
 id block = ^(NSURLSession *session, NSURLSessionDownloadTask *downloadTask, NSURL *location){
     //doing something
     NSLog(@"%@",location);
+/*
+ * 将上面的打印语句注释掉，改成下面的，再运行一次看看会有什么结果？
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+        
+    return [documentsDirectoryURL URLByAppendingPathComponent:[downloadTask.response suggestedFilename]];
+    */
 };
 [manager setDownloadTaskDidFinishDownloadingBlock:block];
 
