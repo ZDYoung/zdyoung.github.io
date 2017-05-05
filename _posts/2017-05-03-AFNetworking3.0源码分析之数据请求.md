@@ -14,6 +14,7 @@ categories: objective-c AFNetworking
 
 无论做什么开发，都避免不了和网络打交道。在iOS中，网络请求这一块，大家肯定用过AFNetworking库。那么它到底是怎么实现的呢？本文主要讲它的数据请求部分，在以后博客中，会慢慢讲解其他部分。网上其实已经有很多相关的博客了，有些写的更好，写这篇博客的原因也是为了方便记下自己在看一些开源库的代码时学习到的编程技法、编程思想和问题的解决方案。
 
+### 正文
 先从AFURLSessionManager开始，可以说它是整个库的核心，后面的AFHTTPSessionManager是就继承自AFURLSessionManager类。AFURLSessionManager类主要是对NSURLSession还有相关代理协议的封装。这个类对用户暴露的接口很少，在实现文件里定义了大量的私有方法，此外还对AFURLSessionManager进行了扩展。进行入AFURLSessionManager.m文件内看可以看到这样的结构：
 ![AFURLSessionManager类结构图](/images/AFURLSessionManager类的结构图.png)
 

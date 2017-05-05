@@ -1,19 +1,169 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
-  <channel>
-    <title></title>
-    <link>http://localhost:4000</link>
-    <description>
-      A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff.
-    </description>
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 语法高亮 -->
+<!--     <link href="http://cdn.bootcss.com/highlight.js/8.0/styles/monokai_sublime.min.css" rel="stylesheet">   -->
+     <link rel="stylesheet" href="/css/highlight/styles/default.css">
     
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>
+    
+        AFNetworking3.0源码解读之下载请求 &#8211; 
+    
+        Alan's blog
+    </title>
+
+    <link rel="dns-prefetch" href="//maxcdn.bootstrapcdn.com">
+    <link rel="dns-prefetch" href="//cdn.mathjax.org">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="本文主要分析AFNetworking的下载请求部分。">
+    <meta name="robots" content="all">
+    <meta name="author" content="冬阳">
+    
+    <meta name="keywords" content="objective-c, AFNetworking">
+    <link rel="canonical" href="http://localhost:4000/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/">
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css?201705051350" type="text/css">
+
+    <!-- Fonts -->
+    
+    <link href='//fonts.googleapis.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'>
+    
+    
+
+    <!-- MathJax -->
+    
+
+    <!-- Verifications -->
+    
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="AFNetworking3.0源码解读之下载请求">
+    <meta property="og:description" content="A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff.">
+    <meta property="og:url" content="http://localhost:4000/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/">
+    <meta property="og:site_name" content="Alan's blog">
+    
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    
+    <meta name="twitter:title" content="AFNetworking3.0源码解读之下载请求" />
+    <meta name="twitter:description" content="本文主要分析AFNetworking的下载请求部分。" />
+    <meta name="twitter:url" content="http://localhost:4000/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/" />
+    
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+
+    
+</head>
+
+<body class="site">
+  
+	
+
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="http://localhost:4000" class="site-title">Alan's blog</a>
+      <nav class="site-nav">
         
-            <item>
-                <title>AFNetworking3.0源码解读之下载请求</title>
-                <link>http://localhost:4000/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/</link>
-                <content:encoded>
-                    <![CDATA[
-                    <p>标签： objective-c AFNetworking download</p>
+    
+
+    
+        <a href="/about/">About Me</a>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    
+
+    
+
+    
+        <a href="/contact/">Contact Me</a>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+      </nav>
+      <div class="clearfix"></div>
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+
+  <h2>AFNetworking3.0源码解读之下载请求</h2>
+  <span class="post-meta">2017-05-05</span><br>
+  
+  <span class="post-meta small">
+  
+    3 minute read
+  
+  </span>
+</div>
+
+<article class="post-content">
+  <p>标签： objective-c AFNetworking download</p>
 
 <hr />
 
@@ -235,300 +385,55 @@
 <p>—EOF—</p>
 
 
-                    ]]>
-                </content:encoded>
-                <guid isPermaLink="false">/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/</guid>
-                <description>
-                    
-                    本文主要分析AFNetworking的下载请求部分。
-                    
-                </description>
-                <pubDate>Fri, 05 May 2017 00:00:00 +0800</pubDate>
-                <author>冬阳</author>
-            </item>
-        
-    
-        
-            <item>
-                <title>AFNetworking3.0源码解读之数据请求</title>
-                <link>http://localhost:4000/objective-c/afnetworking/2017/05/03/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E8%AF%B7%E6%B1%82/</link>
-                <content:encoded>
-                    <![CDATA[
-                    <p>标签： objective-c AFNetworking</p>
-
-<hr />
-
-<h3 id="前言">前言</h3>
-
-<p>无论做什么开发，都避免不了和网络打交道。在iOS中，网络请求这一块，大家肯定用过AFNetworking库。那么它到底是怎么实现的呢？本文主要讲它的数据请求部分，在以后博客中，会慢慢讲解其他部分。网上其实已经有很多相关的博客了，有些写的更好，写这篇博客的原因也是为了方便记下自己在看一些开源库的代码时学习到的编程技法、编程思想和问题的解决方案。</p>
-
-<h3 id="正文">正文</h3>
-<p>先从AFURLSessionManager开始，可以说它是整个库的核心，后面的AFHTTPSessionManager是就继承自AFURLSessionManager类。AFURLSessionManager类主要是对NSURLSession还有相关代理协议的封装。这个类对用户暴露的接口很少，在实现文件里定义了大量的私有方法，此外还对AFURLSessionManager进行了扩展。进行入AFURLSessionManager.m文件内看可以看到这样的结构：
-<img src="/images/AFURLSessionManager类的结构图.png" alt="AFURLSessionManager类结构图" /></p>
-
-<p>在实现文件里，AFURLSessionManager.m里定义了两个类，一个类是AFURLSessionManagerTaskDelegate，还有一个就是_AFURLSessionTaskSwizzling。</p>
-
-<p>AFURLSessionManagerTaskDelegate这个类从名字上看就知道，它是用来实现代理的，所有的网络请求回调都是经过它。呆会通过一个实际的例子来的说明。</p>
-
-<p>那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，笔者还没有能过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的<code class="highlighter-rouge">resume</code>和<code class="highlighter-rouge">suspend</code>进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。</p>
-
-<p>接下来，笔者就以官方给出的例子跟踪一下，它的调用过程以下是源码：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="n">configuration</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLSessionConfiguration</span> <span class="nf">defaultSessionConfiguration</span><span class="p">];</span>
-<span class="n">AFURLSessionManager</span> <span class="o">*</span><span class="n">manager</span> <span class="o">=</span> <span class="p">[[</span><span class="n">AFURLSessionManager</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithSessionConfiguration</span><span class="p">:</span><span class="n">configuration</span><span class="p">];</span>
-
-<span class="n">manager</span><span class="p">.</span><span class="n">responseSerializer</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFHTTPResponseSerializer</span> <span class="nf">serializer</span><span class="p">];</span>
-<span class="n">NSURL</span> <span class="o">*</span><span class="n">URL</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURL</span> <span class="nf">URLWithString</span><span class="p">:</span><span class="s">@"http://www.baidu.com"</span><span class="p">];</span>
-<span class="n">NSURLRequest</span> <span class="o">*</span><span class="n">request</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLRequest</span> <span class="nf">requestWithURL</span><span class="p">:</span><span class="n">URL</span><span class="p">];</span>
-
-<span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">dataTask</span> <span class="o">=</span> <span class="p">[</span><span class="n">manager</span> <span class="nf">dataTaskWithRequest</span><span class="p">:</span><span class="n">request</span> <span class="nf">completionHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">NSURLResponse</span> <span class="o">*</span><span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Error: %@"</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        
-        <span class="n">NSString</span> <span class="o">*</span><span class="n">result</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSString</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithData</span><span class="p">:</span><span class="n">responseObject</span>  <span class="nf">encoding</span><span class="p">:</span><span class="n">NSUTF8StringEncoding</span><span class="p">];</span>
-        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,[</span><span class="n">responseObject</span> <span class="nf">class</span><span class="p">]);</span>
-        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span><span class="n">result</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}];</span>
-<span class="p">[</span><span class="n">dataTask</span> <span class="nf">resume</span><span class="p">];</span>
-</code></pre>
-</div>
-<p>该代码核心只有两句一个是manager的初始化还有一个就是dataTask的创建。先来看看初始化：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">instancetype</span><span class="p">)</span><span class="nf">initWithSessionConfiguration</span><span class="p">:(</span><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="p">)</span><span class="nv">configuration</span> <span class="p">{</span>
-    <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">self</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">configuration</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">configuration</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLSessionConfiguration</span> <span class="nf">defaultSessionConfiguration</span><span class="p">];</span>
-    <span class="p">}</span>
-
-    <span class="n">self</span><span class="p">.</span><span class="n">sessionConfiguration</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">;</span><span class="c1">//默认配置
-</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">operationQueue</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSOperationQueue</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">operationQueue</span><span class="p">.</span><span class="n">maxConcurrentOperationCount</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="c1">//最大并发数，此处应该当成串行队列来用了
-</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">session</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLSession</span> <span class="nf">sessionWithConfiguration</span><span class="p">:</span><span class="n">self</span><span class="p">.</span><span class="n">sessionConfiguration</span> <span class="nf">delegate</span><span class="p">:</span><span class="n">self</span> <span class="n">delegateQueue</span><span class="o">:</span><span class="n">self</span><span class="p">.</span><span class="n">operationQueue</span><span class="p">];</span><span class="c1">//创建session，设置代理对象
-</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">responseSerializer</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFJSONResponseSerializer</span> <span class="nf">serializer</span><span class="p">];</span><span class="c1">//默认的解析器
-</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">securityPolicy</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFSecurityPolicy</span> <span class="nf">defaultPolicy</span><span class="p">];</span>
-
-<span class="cp">#if !TARGET_OS_WATCH
-</span>    <span class="n">self</span><span class="p">.</span><span class="n">reachabilityManager</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFNetworkReachabilityManager</span> <span class="nf">sharedManager</span><span class="p">];</span>
-<span class="cp">#endif
-</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">mutableTaskDelegatesKeyedByTaskIdentifier</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableDictionary</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
-
-    <span class="n">self</span><span class="p">.</span><span class="n">lock</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSLock</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">lock</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">AFURLSessionManagerLockName</span><span class="p">;</span>
-
-    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">session</span> <span class="nf">getTasksWithCompletionHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">NSArray</span> <span class="o">*</span><span class="n">dataTasks</span><span class="p">,</span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">uploadTasks</span><span class="p">,</span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">downloadTasks</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">task</span> <span class="k">in</span> <span class="n">dataTasks</span><span class="p">)</span> <span class="p">{</span>
-            <span class="p">[</span><span class="n">self</span> <span class="nf">addDelegateForDataTask</span><span class="p">:</span><span class="n">task</span> <span class="nf">completionHandler</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
-        <span class="p">}</span>
-
-        <span class="k">for</span> <span class="p">(</span><span class="n">NSURLSessionUploadTask</span> <span class="o">*</span><span class="n">uploadTask</span> <span class="k">in</span> <span class="n">uploadTasks</span><span class="p">)</span> <span class="p">{</span>
-            <span class="p">[</span><span class="n">self</span> <span class="nf">addDelegateForUploadTask</span><span class="p">:</span><span class="n">uploadTask</span> <span class="nf">progress</span><span class="p">:</span><span class="nb">nil</span> <span class="n">completionHandler</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
-        <span class="p">}</span>
-
-        <span class="k">for</span> <span class="p">(</span><span class="n">NSURLSessionDownloadTask</span> <span class="o">*</span><span class="n">downloadTask</span> <span class="k">in</span> <span class="n">downloadTasks</span><span class="p">)</span> <span class="p">{</span>
-            <span class="p">[</span><span class="n">self</span> <span class="nf">addDelegateForDownloadTask</span><span class="p">:</span><span class="n">downloadTask</span> <span class="nf">progress</span><span class="p">:</span><span class="nb">nil</span> <span class="n">destination</span><span class="o">:</span><span class="nb">nil</span> <span class="n">completionHandler</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
-        <span class="p">}</span>
-    <span class="p">}];</span>
-
-    <span class="p">[[</span><span class="n">NSNotificationCenter</span> <span class="nf">defaultCenter</span><span class="p">]</span> <span class="nf">addObserver</span><span class="p">:</span><span class="n">self</span> <span class="nf">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">taskDidResume</span><span class="o">:</span><span class="p">)</span> <span class="n">name</span><span class="o">:</span><span class="n">AFNSURLSessionTaskDidResumeNotification</span> <span class="n">object</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
-    <span class="p">[[</span><span class="n">NSNotificationCenter</span> <span class="nf">defaultCenter</span><span class="p">]</span> <span class="nf">addObserver</span><span class="p">:</span><span class="n">self</span> <span class="nf">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">taskDidSuspend</span><span class="o">:</span><span class="p">)</span> <span class="n">name</span><span class="o">:</span><span class="n">AFNSURLSessionTaskDidSuspendNotification</span> <span class="n">object</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
-
-    <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>看起来好多，对我们本次的目的其实需要关心的东西很少，我都给出来了注释。</p>
-
-<p>第二处是dataTask的创建，为了说明，先把程序跑起来看看函数的调用栈。任务一启动，首先进入到了[AFURLSessionManager dataTaskWithRequest:completionHandler:]函数中：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nf">dataTaskWithRequest</span><span class="p">:(</span><span class="n">NSURLRequest</span> <span class="o">*</span><span class="p">)</span><span class="nv">request</span>
-                            <span class="nf">completionHandler</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLResponse</span> <span class="o">*</span><span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">))</span><span class="nv">completionHandler</span>
-<span class="p">{</span>
-    <span class="n">__block</span> <span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">dataTask</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
-    <span class="n">dispatch_sync</span><span class="p">(</span><span class="n">url_session_manager_creation_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-        <span class="n">dataTask</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">session</span> <span class="nf">dataTaskWithRequest</span><span class="p">:</span><span class="n">request</span><span class="p">];</span>
-    <span class="p">});</span>
-
-    <span class="p">[</span><span class="n">self</span> <span class="nf">addDelegateForDataTask</span><span class="p">:</span><span class="n">dataTask</span> <span class="nf">completionHandler</span><span class="p">:</span><span class="n">completionHandler</span><span class="p">];</span>
-
-    <span class="k">return</span> <span class="n">dataTask</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>函数体内主要是在一个GCD队列里创建dataTask，此处用到的是GCD同步API。然后调用了第一个私有方法[AFURLSessionManager addDelegateForDataTask:completionHandler:]来设置dataTask的代理和回调的block:</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">addDelegateForDataTask</span><span class="p">:(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
-             <span class="nf">completionHandler</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLResponse</span> <span class="o">*</span><span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">))</span><span class="nv">completionHandler</span>
-<span class="p">{</span>
-    <span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="n">delegate</span> <span class="o">=</span> <span class="p">[[</span><span class="n">AFURLSessionManagerTaskDelegate</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
-    <span class="n">delegate</span><span class="p">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
-    <span class="n">delegate</span><span class="p">.</span><span class="n">completionHandler</span> <span class="o">=</span> <span class="n">completionHandler</span><span class="p">;</span>
-
-    <span class="n">dataTask</span><span class="p">.</span><span class="n">taskDescription</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">taskDescriptionForSessionTasks</span><span class="p">;</span>
-    
-    <span class="p">[</span><span class="n">self</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">delegate</span> <span class="nf">forTask</span><span class="p">:</span><span class="n">dataTask</span><span class="p">];</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>在这个函数内真正的设置了网络的代理，就是刚才提到的AFURLSessionManagerTaskDelegate类，这里有一个小细节需要注意一下，就是这一行<code class="highlighter-rouge">delegate.manager = self</code>，在该函数内定义了一个delegate并且持有了manager,而在AFURLSessionManagerTaskDelegate定义中声明了一个AFURLSessionManager对象manager。这就是说delegate持有了manager，manager持有了delegate，循环引用的问题就出来了，这里的解决方法是通过将AFURLSessionManagerTaskDelegate中的manager属性的内存管理语义声明为weak。我们看一下，该类的声明就知道了。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AFURLSessionManagerTaskDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span> <span class="o">&lt;</span><span class="n">NSURLSessionTaskDelegate</span><span class="p">,</span> <span class="n">NSURLSessionDataDelegate</span><span class="p">,</span> <span class="n">NSURLSessionDownloadDelegate</span><span class="o">&gt;</span>
-<span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">weak</span><span class="p">)</span> <span class="n">AFURLSessionManager</span> <span class="o">*</span><span class="n">manager</span><span class="p">;</span><span class="c1">//内存管理语义为weak
-</span><span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSMutableData</span> <span class="o">*</span><span class="n">mutableData</span><span class="p">;</span>
-<span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSProgress</span> <span class="o">*</span><span class="n">progress</span><span class="p">;</span>
-<span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">copy</span><span class="p">)</span> <span class="n">NSURL</span> <span class="o">*</span><span class="n">downloadFileURL</span><span class="p">;</span>
-<span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">copy</span><span class="p">)</span> <span class="n">AFURLSessionDownloadTaskDidFinishDownloadingBlock</span> <span class="n">downloadTaskDidFinishDownloading</span><span class="p">;</span>
-<span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">copy</span><span class="p">)</span> <span class="n">AFURLSessionTaskCompletionHandler</span> <span class="n">completionHandler</span><span class="p">;</span>
-<span class="k">@end</span>
-</code></pre>
-</div>
-
-<p>接着上面的说，接下来函数的调用栈就进入了[AFURLSessionManager setDelegate:dataTask:]。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setDelegate</span><span class="p">:(</span><span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="p">)</span><span class="nv">delegate</span>
-            <span class="nf">forTask</span><span class="p">:(</span><span class="n">NSURLSessionTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">task</span>
-<span class="p">{</span>
-    <span class="n">NSParameterAssert</span><span class="p">(</span><span class="n">task</span><span class="p">);</span>
-    <span class="n">NSParameterAssert</span><span class="p">(</span><span class="n">delegate</span><span class="p">);</span>
-
-    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">lock</span> <span class="nf">lock</span><span class="p">];</span>
-    <span class="n">self</span><span class="p">.</span><span class="n">mutableTaskDelegatesKeyedByTaskIdentifier</span><span class="p">[</span><span class="err">@</span><span class="p">(</span><span class="n">task</span><span class="p">.</span><span class="n">taskIdentifier</span><span class="p">)]</span> <span class="o">=</span> <span class="n">delegate</span><span class="p">;</span>
-    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">lock</span> <span class="nf">unlock</span><span class="p">];</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>这个函数是用来干吗的呢？还加了锁。从代码上看，就是保存task的代理。</p>
-
-<p>至此，所有的准备工作都做完了只等我们去启动这个任务了。没错，就是通过这一句<code class="highlighter-rouge">[dataTask resume]</code>。写到这，先来总结一下，这些准备工作的函数调用过程，直接甩图了：
-<img src="/images/调用过程.png" alt="调用过程" /></p>
-
-<p>接下来就是代理了，代理的过程是这样的，AFURLSessionManager自己实现了代理协议，但是在代理协议方法中，根据dataTask的taskIdentifier找到相应的delegate对象，把具体代理该做的事，交给这个delegate。任务启动后第一个调用的是AFURLSessionManager这个函数：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManager类的方法
-</span><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">URLSession</span><span class="p">:(</span><span class="n">NSURLSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
-          <span class="nf">dataTask</span><span class="p">:(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
-    <span class="nf">didReceiveData</span><span class="p">:(</span><span class="n">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">data</span>
-<span class="p">{</span>
-    <span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="n">delegate</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">delegateForTask</span><span class="p">:</span><span class="n">dataTask</span><span class="p">];</span>
-    <span class="p">[</span><span class="n">delegate</span> <span class="nf">URLSession</span><span class="p">:</span><span class="n">session</span> <span class="nf">dataTask</span><span class="p">:</span><span class="n">dataTask</span> <span class="n">didReceiveData</span><span class="o">:</span><span class="n">data</span><span class="p">];</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">dataTaskDidReceiveData</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">dataTaskDidReceiveData</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">dataTask</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>可以看出它把delegate取出来之后就转到AFURLSessionManagerTaskDelegate类中去了，调用了AFURLSessionManagerTaskDelegate同名方法。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManagerTaskDelegate类的方法
-</span><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">URLSession</span><span class="p">:(</span><span class="n">__unused</span> <span class="n">NSURLSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
-          <span class="nf">dataTask</span><span class="p">:(</span><span class="n">__unused</span> <span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
-    <span class="nf">didReceiveData</span><span class="p">:(</span><span class="n">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">data</span>
-<span class="p">{</span>
-    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">mutableData</span> <span class="nf">appendData</span><span class="p">:</span><span class="n">data</span><span class="p">];</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>上面的这个函数才是真正干事的，AFURLSessionManager类中的同名方法只是打了一个酱油。当请求结束的时候，同样首先会调用AFURLSessionManager中的方法：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManager类的方法
-</span><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">URLSession</span><span class="p">:(</span><span class="n">NSURLSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
-              <span class="nf">task</span><span class="p">:(</span><span class="n">NSURLSessionTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">task</span>
-<span class="nf">didCompleteWithError</span><span class="p">:(</span><span class="n">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span>
-<span class="p">{</span>
-    <span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="n">delegate</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">delegateForTask</span><span class="p">:</span><span class="n">task</span><span class="p">];</span>
-
-    <span class="c1">// delegate may be nil when completing a task in the background
-</span>    <span class="k">if</span> <span class="p">(</span><span class="n">delegate</span><span class="p">)</span> <span class="p">{</span>
-        <span class="p">[</span><span class="n">delegate</span> <span class="nf">URLSession</span><span class="p">:</span><span class="n">session</span> <span class="nf">task</span><span class="p">:</span><span class="n">task</span> <span class="n">didCompleteWithError</span><span class="o">:</span><span class="n">error</span><span class="p">];</span>
-
-        <span class="p">[</span><span class="n">self</span> <span class="nf">removeDelegateForTask</span><span class="p">:</span><span class="n">task</span><span class="p">];</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">taskDidComplete</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">taskDidComplete</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
-    <span class="p">}</span>
-
-<span class="p">}</span>
-</code></pre>
-</div>
-<p>真正干事的还是AFURLSessionManagerTaskDelegate类中的同名方法。这里给出这个方法的部分代码：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//在没有错误的时候就执行这一段代码
-</span><span class="n">dispatch_async</span><span class="p">(</span><span class="n">url_session_manager_processing_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-    <span class="n">NSError</span> <span class="o">*</span><span class="n">serializationError</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
-    <span class="n">responseObject</span> <span class="o">=</span> <span class="p">[</span><span class="n">manager</span><span class="p">.</span><span class="n">responseSerializer</span> <span class="nf">responseObjectForResponse</span><span class="p">:</span><span class="n">task</span><span class="p">.</span><span class="n">response</span> <span class="nf">data</span><span class="p">:</span><span class="n">data</span> <span class="n">error</span><span class="o">:&amp;</span><span class="n">serializationError</span><span class="p">];</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">downloadFileURL</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">responseObject</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">downloadFileURL</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">responseObject</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">userInfo</span><span class="p">[</span><span class="nf">AFNetworkingTaskDidCompleteSerializedResponseKey</span><span class="p">]</span> <span class="o">=</span> <span class="n">responseObject</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">serializationError</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">userInfo</span><span class="p">[</span><span class="nf">AFNetworkingTaskDidCompleteErrorKey</span><span class="p">]</span> <span class="o">=</span> <span class="n">serializationError</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="c1">//这是真正干事的
-</span>    <span class="n">dispatch_group_async</span><span class="p">(</span><span class="n">manager</span><span class="p">.</span><span class="n">completionGroup</span> <span class="p">?:</span> <span class="n">url_session_manager_completion_group</span><span class="p">(),</span> <span class="n">manager</span><span class="p">.</span><span class="n">completionQueue</span> <span class="p">?:</span> <span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-    	<span class="c1">//执行completionHandler，把取到的数据传到外面去，这里的responseObject就是我们请求到的数据
-</span>        <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">completionHandler</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">self</span><span class="p">.</span><span class="n">completionHandler</span><span class="p">(</span><span class="n">task</span><span class="p">.</span><span class="n">response</span><span class="p">,</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">serializationError</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-            <span class="p">[[</span><span class="n">NSNotificationCenter</span> <span class="nf">defaultCenter</span><span class="p">]</span> <span class="nf">postNotificationName</span><span class="p">:</span><span class="n">AFNetworkingTaskDidCompleteNotification</span> <span class="nf">object</span><span class="p">:</span><span class="n">task</span> <span class="n">userInfo</span><span class="o">:</span><span class="n">userInfo</span><span class="p">];</span>
-        <span class="p">});</span>
-    <span class="p">});</span>
-<span class="p">});</span>
-
-</code></pre>
-</div>
-<p>至此整个代理过程就结束了。其中有一个地方值得注意一下，那就是每用manager创建一个task时，manager都会以task的taskIdentifier属性为key，以delegate为value存入字典中。这样的做的目的应该是一个manager可以管理多个task。</p>
-
-<p>—EOF—</p>
+</article>
 
 
-                    ]]>
-                </content:encoded>
-                <guid isPermaLink="false">/objective-c/afnetworking/2017/05/03/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E8%AF%B7%E6%B1%82/</guid>
-                <description>
-                    
-                    本文主要分析AFNetworking的数据请求部分。
-                    
-                </description>
-                <pubDate>Wed, 03 May 2017 00:00:00 +0800</pubDate>
-                <author>冬阳</author>
-            </item>
-        
-    
-        
-            <item>
-                <title>github-pages-搭建成功</title>
-                <link>http://localhost:4000/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</link>
-                <content:encoded>
-                    <![CDATA[
-                    <p>早就有想把平时遇到的问题，还有把自己的知识积累做个总结，但是一直懒于动手，结果是，一些知识时间一长，如果用的不是很频繁的话就比较容易忘记，到写这篇博客的时候好像就有一些知识点就忘记了。前一段时间知道了github pages后就，就在网上找了个模板，修修改改，搞了一两天，笔都对前端不太了解，平时做的都是iOS，看来得找个时间看看前端了。好吧，今天就写这么点了，本来还想写写怎么建立自己的博客，不过网上已有很多相关的博客，这里我发一两篇我参考的吧。</p>
 
-<p><a href="https://github.com/uolcano/blog/issues/11">利用GitHub Pages建立项目或个人网站</a></p>
 
-<p><a href="http://www.zhanxin.info/jekyll/2013-08-07-jekyll-doc-installation.html">Jekyll教程</a></p>
+<p>由于disqus被墙，评论需要VPN哦。</p>
 
-<p>–EOF–</p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname  = 'https-zdyoung-github-io';
+    var disqus_identifier = '/objective-c/afnetworking/2017/05/05/AFNetworking3.0源码分析之数据下载';
+    var disqus_title      = "AFNetworking3.0源码解读之下载请求";
 
-                    ]]>
-                </content:encoded>
-                <guid isPermaLink="false">/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</guid>
-                <description>
-                    
-                    折腾了一两天，终于把博客搭的差不多了。
-                    
-                </description>
-                <pubDate>Thu, 27 Apr 2017 00:00:00 +0800</pubDate>
-                <author>冬阳</author>
-            </item>
-        
-    
-  </channel>
-</rss>
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="center">
+  <div class="measure">
+    <small>
+    	<div>
+    		&copy 2017 Alan Zhang
+    	</div>
+    	<div>
+    		Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a> | Theme-<a href="https://github.com/johnotander/pixyll">pixyll</a>
+    	</div>
+    </small>
+  </div>
+</footer>
+
+
+  <!-- 语法高亮 -->
+  <!-- <script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>
+  <script >hljs.initHighlightingOnLoad();</script>   -->
+  <script type="text/javascript" src="/css/highlight/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- 语法高亮 -->
+</body>
+</html>
