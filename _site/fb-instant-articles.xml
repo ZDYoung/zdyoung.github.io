@@ -69,6 +69,12 @@
 <span class="n">id</span> <span class="n">block</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NSURLSession</span> <span class="o">*</span><span class="n">session</span><span class="p">,</span> <span class="n">NSURLSessionDownloadTask</span> <span class="o">*</span><span class="n">downloadTask</span><span class="p">,</span> <span class="n">NSURL</span> <span class="o">*</span><span class="n">location</span><span class="p">){</span>
     <span class="c1">//doing something
 </span>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span><span class="n">location</span><span class="p">);</span>
+<span class="cm">/*
+ * 将上面的打印语句注释掉，改成下面的，再运行一次看看会有什么结果？
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil]; 
+        
+    return [documentsDirectoryURL URLByAppendingPathComponent:[downloadTask.response suggestedFilename]];
+    */</span>
 <span class="p">};</span>
 <span class="p">[</span><span class="n">manager</span> <span class="nf">setDownloadTaskDidFinishDownloadingBlock</span><span class="p">:</span><span class="n">block</span><span class="p">];</span>
 
