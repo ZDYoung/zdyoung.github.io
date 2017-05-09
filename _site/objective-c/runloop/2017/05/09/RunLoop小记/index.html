@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705091714" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201705092117" type="text/css">
 
     <!-- Fonts -->
     
@@ -193,7 +193,7 @@
 <span class="p">}</span>
 </code></pre>
 </div>
-<p>如果RunLoop是这样做的话，那么也就没什么值研究的了。所以说它是一种带条件的循环，那么又是什么条件呢？那就是消息或者事件，RunLoop是一个基于消息的循环，当有消息来的时候也是加入到这个循环里时，就会对消息进行处理–睡你XX，起来嗨。比如：点击了屏幕，滚动了scrollView，这些都是消息。如果没有消息的时候，RunLoop就休眠，什么也不干–我睡觉了，没事别叫我。这样的好处是不占CPU的资源。形象一点就是：</p>
+<p>如果RunLoop是这样做的话，那么也就没什么值研究的了。所以说它是一种带条件的循环，那么又是什么条件呢？那就是消息或者事件，RunLoop是一个基于消息的循环。当没有消息的时候，它就会进入休眠，内核会将其挂起也就是：我睡觉了，没事别叫我。当有消息来的时候就加入到这个循环里时，内核就会将其唤醒，然后对消息进行处理，也就是：睡你XX，起来嗨。比如：点击了屏幕，滚动了scrollView，这些都是消息。形象一点就是：</p>
 <div class="language-c highlighter-rouge"><pre class="highlight"><code><span class="err">程序员</span> <span class="o">=</span> <span class="err">死了没</span><span class="p">();</span>
 <span class="k">while</span><span class="p">(</span><span class="err">程序员</span><span class="p">)</span>
 <span class="p">{</span>
@@ -394,7 +394,7 @@
 <span class="mi">2017</span><span class="o">-</span><span class="mo">05</span><span class="o">-</span><span class="mi">09</span> <span class="mi">11</span><span class="o">:</span><span class="mi">37</span><span class="o">:</span><span class="mi">51</span><span class="p">.</span><span class="mi">159</span> <span class="n">copy</span><span class="p">[</span><span class="mi">92859</span><span class="o">:</span><span class="mi">12314616</span><span class="p">]</span> <span class="err">这是一个标签</span>
 </code></pre>
 </div>
-<p>当点击屏幕的时候，会在我们创建的线程内执行一次方法<code class="highlighter-rouge">againRun</code>，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问不已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后<code class="highlighter-rouge">self.label = [[UILabel alloc] init];</code>，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，笔者猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。</p>
+<p>当点击屏幕的时候，会在我们创建的线程内执行一次方法<code class="highlighter-rouge">againRun</code>，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后<code class="highlighter-rouge">self.label = [[UILabel alloc] init];</code>，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，笔者猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。</p>
 
 <h3 id="runloop对timer的影响">RunLoop对timer的影响</h3>
 
