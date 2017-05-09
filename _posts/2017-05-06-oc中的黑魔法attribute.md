@@ -187,6 +187,8 @@ __attribute__((objc_subclassing_restricted))
 
 [__attribute__](http://nshipster.com/__attribute__/)
 
+[__attribute__指令](http://www.aopod.com/2016/08/03/attribute-directives/)
+
 [Clang 3.8 documentation](http://www.jianshu.com/p/0237c34158f0)
 
 --EOF--
