@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705092117" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201705162055" type="text/css">
 
     <!-- Fonts -->
     
@@ -186,14 +186,14 @@
 
 <h2 id="正文">正文</h2>
 
-<p>RunLoop是什么？从名字上看，它是一个loop而且是一个带条件的，同时又是一个”死循环”，但是它又很特殊，在没有事干的时候，这个循环处于闲等待的状态。写一个死循环容易：</p>
+<p>RunLoop是什么？在windows下用windowsAPI做过开发的人对于基于消息循环的事件处理机制应该不会陌生，RunLoop和其差不多。从名字上看，它是一个loop而且是一个带条件的，同时又是一个”死循环”，但是它又很特殊，在没有事干的时候，这个循环处于闲等待的状态。写一个死循环容易：</p>
 <div class="language-c highlighter-rouge"><pre class="highlight"><code><span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">{</span>
 
 <span class="p">}</span>
 </code></pre>
 </div>
-<p>如果RunLoop是这样做的话，那么也就没什么值研究的了。所以说它是一种带条件的循环，那么又是什么条件呢？那就是消息或者事件，RunLoop是一个基于消息的循环。当没有消息的时候，它就会进入休眠，内核会将其挂起也就是：我睡觉了，没事别叫我。当有消息来的时候就加入到这个循环里时，内核就会将其唤醒，然后对消息进行处理，也就是：睡你XX，起来嗨。比如：点击了屏幕，滚动了scrollView，这些都是消息。形象一点就是：</p>
+<p>如果RunLoop是这样做的话，那么也就没什么值研究的了。所以说它是一种带条件的循环，那么又是什么条件呢？那就是消息或者事件，RunLoop是一个基于消息的循环。当没有消息的时候，它就会进入休眠，内核会将其挂起也就是：我睡觉了，没事别叫我。当有消息来的时候就加入到这个循环里时，内核就会将其唤醒，然后对消息进行处理，也就是：睡你XX，起来嗨。形象一点就是：</p>
 <div class="language-c highlighter-rouge"><pre class="highlight"><code><span class="err">程序员</span> <span class="o">=</span> <span class="err">死了没</span><span class="p">();</span>
 <span class="k">while</span><span class="p">(</span><span class="err">程序员</span><span class="p">)</span>
 <span class="p">{</span>
