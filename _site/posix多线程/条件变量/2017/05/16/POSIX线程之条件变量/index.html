@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705162055" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201705191057" type="text/css">
 
     <!-- Fonts -->
     
@@ -199,7 +199,7 @@
 
 <p>PS：原子操作是一旦开始就一直运行到结束，中间不会有任何的上下文切换，因此不需要同步。</p>
 
-<p>如果两线程几乎在同一时间对同一个变量做增量操作而不进行同步的话，结果可能出现比原来增加了也可能增加了2，具体要看第二个线程的开始操作获取的数值。</p>
+<p>如果两线程几乎在同一时间对同一个变量做增量操作而不进行同步的话，结果可能出现比原来增加了1也可能增加了2，具体要看第二个线程的开始操作获取的数值。</p>
 
 <h3 id="互斥量">互斥量</h3>
 
@@ -209,7 +209,7 @@
 
 <h3 id="条件变量">条件变量</h3>
 
-<p>条件变量是线程的别一种同步机制，与互斥一起使用时，允许线程以无竞争的等待方式等待特定的条件发生。它由互斥量保护，在线程改变条件之前必须首先锁住互斥量。</p>
+<p>条件变量是线程的另一种同步机制，与互斥一起使用时，允许线程以无竞争的等待方式等待特定的条件发生。它由互斥量保护，在线程改变条件之前必须首先锁住互斥量。</p>
 
 <p>回到前面提到的问题。前面说了，解法用到了互斥量和条件变量，来看看怎么用的：</p>
 <div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;

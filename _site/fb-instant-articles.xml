@@ -9,6 +9,224 @@
     
         
             <item>
+                <title>AFNetworking3.0之HTTP请求</title>
+                <link>http://localhost:4000/objective-c/http/2017/05/19/AFNetworking3.0%E4%B9%8BHTTP%E8%AF%B7%E6%B1%82/</link>
+                <content:encoded>
+                    <![CDATA[
+                    <p>标签： objective-c HTTP</p>
+
+<h2 id="前言">前言</h2>
+
+<p>前面写过了AFNetworking的数据请求和下载的部分，也对AFNetworking有了一个基本的了解，这部分讲一下它是如何实现HTTP请求的，同时也剖析一下AFNetworking整个类的构成。</p>
+
+<h2 id="正文">正文</h2>
+
+<p>AFNetworking3.0的代码比起以前的版本，精简了很多，对于笔者来说可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，笔者也不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。</p>
+
+<p>提到HTTP，就叉开一下，复习一下关于HTTP请求的东西。</p>
+
+<h3 id="http请求">HTTP请求</h3>
+<p>当浏览器向Web服务器发出请求时，它向服务器传递了一个数据块，也就是请求信息，它由3个部分组成：</p>
+<ol>
+  <li>请求方法URI协议/版本</li>
+  <li>请求头(Request Header)</li>
+  <li>请求正文</li>
+</ol>
+
+<p>请求格式：<br />
+&lt;request-line&gt;<br />
+&lt;headers&gt;<br />
+&lt;blank line&gt;<br />
+[&lt;request-body&gt;]</p>
+
+<p>一个典型的例子：</p>
+
+<p>GET / HTTP/1.1<br />
+Host: youku.com<br />
+Upgrade-Insecure-Requests: 1<br />
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36<br />
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,<em>/</em>;q=0.8<br />
+Accept-Encoding: gzip, deflate, sdch<br />
+Accept-Language: zh-CN,zh;q=0.8,en;q=0.6<br /></p>
+
+<p>这是刚刚抓的请求包头。
+第一行GET / HTTP/1.1分别为请求方法，URL（这里是根路径），协议版本1.1。从第二行开始都是请求头，请求头包含许多有关的客户端环境和请求正文的有用信息。例如，请求头可以声明浏览器所用的语言，请求正文的长度等。最后是是请求正文，这里没有。请求头和请求正文之间是一个空行，这个行非常重要，它表示请求头已经结束，接下来的是请求正文。请求正文中可以包含客户提交的查询字符。</p>
+
+<p>HTTP请求方法用的最多的为GET方法与POST方法。</p>
+<ol>
+  <li>
+    <div><font color="#FF6100">GET方法</font>：默认的HTTP请求方法，我们日常用GET方法来提交表单数据，然而用GET方法提交的表单数据只经过了简单的编码，同时它将作为URL的一部分向Web服务器发送，因此，如果使用GET方法来提交表单数据就存在着安全隐患上。例如Http://127.0.0.1/login.jsp?Name=zhangshi&amp;Age=30&amp;Submit=%cc%E+%BD%BB从上面的URL请求中，很容易就可以辩认出表单提交的内容。（？之后的内容）另外由于GET方法提交的数据是作为URL请求的一部分所以提交的数据量不能太大。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">POST方法</font>：POST方法是GET方法的一个替代方法，它主要是向Web服务器提交表单数据，尤其是大批量的数据。POST方法克服了GET方法的一些缺点。通过POST方法提交表单数据时，数据不是作为URL请求的一部分而是作为标准数据传送给Web服务器，这就克服了GET方法中的信息无法保密和数据量太小的缺点。因此，出于安全的考虑以及对用户隐私的尊重，通常表单提交时采用POST方法。</div>
+  </li>
+</ol>
+
+<p>HTTP响应也由三个部分组成，分别是：</p>
+<ol>
+  <li>状态行</li>
+  <li>消息报头</li>
+  <li>响应正文。</li>
+</ol>
+
+<p>响应格式：<br />
+＜status-line＞<br />
+＜headers＞<br />
+＜blank line＞<br />
+[＜response-body＞]</p>
+
+<p>一个典型的例子：<br />
+HTTP/1.1 200 OK<br />
+Date: Thu, 18 May 2017 12:38:15 GMT<br />
+Content-Type: text/html; charset=utf-8<br />
+Content-Encoding: gzip<br /></p>
+
+<p>第二行为协议状态版本代码描述，这里应答码为200，接下来都是响应头。<br />
+HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态。HTTP应答码由3位数字构成，其中首位数字定义了应答码的类型：</p>
+<ol>
+  <li>
+    <div><font color="#FF6100">1XX－信息类（Information）</font>：表示收到Web浏览器请求，正在进一步的处理中。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">2XX－成功类（Successful）</font>:表示用户请求被正确接收，理解和处理例如：200 OK。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">3XX-重定向类（Redirection）</font>:表示请求没有成功，客户必须采取进一步的动作。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">4XX-客户端错误（Client Error）</font>:表示客户端提交的请求有错误。例如：404 NOTFound，意味着请求中所引用的文档不存在。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">5XX-服务器错误（Server Error）</font>:表示服务器不能完成对请求的处理：如 500。</div>
+  </li>
+</ol>
+
+<p>好了，现在叉回来。前面讲过AFURLSessionManager是整个库的核心，因为在HTTP这一部分，都是在这个类的基础上实现的。通过源码也可以看到AFURLSessionManager这个类有1000多行代码而接下来要讲的AFHTTPSessionManager类，只有300行多一点，而且AFHTTPSessionManager是继承自AFURLSessionManager的，因此HTTP请求部分的绝大多数工作都交给了AFHTTPSessionManager的父类那部分。来看看整个库的类的构成：<img src="/images/AFNetworking结构图.png" alt="AFNetworking结构图" /></p>
+
+<p>简单介绍一下这张图上的每个类吧，其实
+有些类的功能，笔者也没用过，不过往后可以试试：</p>
+<ul>
+  <li>
+    <div><font color="#FF6100">AFURLSessionManager:</font>这个类前面讲过，它对NSURLSession及NSURLSessionTaskDelegate、NSURLSessionDataDelegate、NSURLSessionDownloadDelegate和NSURLSessionDelegate进行了封装，实现了诸如数据请求，下载和上传任务。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFURLConnectionOperation:</font>它是NSOperation的子类，实现了NSURLConnection代理方法，这是iOS 6 或 Mac OS X 10.8以前用的API，现在基本不用了。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFHTTPSessionManager:</font>这是基于NSURLSession实现的用于HTTP的GET、POST等类，也是本文主要讲的东西。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFHTTPRequestOperation:</font>这是基于AFURLConnectionOperation子类，它和AFHTTPRequestOperationManager是一起配套使用的。这个类封装了可接受的状态码和可接受的内容类型。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFHTTPRequestOperationManager:</font>这个是实现HTTP各个请求方法的和AFHTTPRequestOperation配套使用的。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFURLRequestSerialization:</font>用来封装参数的，也可以用来设置请求头，请求的正文的格式等。比如，可以将请求的HTTP的body设置成JSON并在请求头部分将Content-Type字段的值设成application/json。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFURLResponseSerialization:</font>根据服务器的响应细节来解析响应的数据，此外还可以对响应的数据进行验证。例如，如果期待得到的是JSON格式的数据，那么它会检查响应码是否是2xx开头的，同时还会检查响应头的Content-Type字段是否为application/json，从而将响应的数据正解的解析成对象。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFNetworkReachabilityManager:</font>用来监控网络状态。</div>
+  </li>
+  <li>
+    <div><font color="#FF6100">AFSecurityPolicy:</font>用来管控网络安全的。</div>
+  </li>
+</ul>
+
+<p>抛开基于NSURLConnection那一部分，真正核心的就两个两类了AFHTTPSessionManager和AFURLSessionManager。</p>
+
+<p>还是以官方给的例子讲吧，这里从网上找了一张图片，使用了GET方法，获取图片并且显示在一个UIImageView上：</p>
+<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="n">AFHTTPSessionManager</span> <span class="o">*</span><span class="n">manager</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFHTTPSessionManager</span> <span class="nf">manager</span><span class="p">];</span>
+
+<span class="c1">//使用了默认的序列化器
+</span><span class="n">manager</span><span class="p">.</span><span class="n">responseSerializer</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFHTTPResponseSerializer</span> <span class="nf">serializer</span><span class="p">];</span>
+
+<span class="c1">//发起一个GET请求还是巨方便的。
+</span><span class="p">[</span><span class="n">manager</span> <span class="nf">GET</span><span class="p">:</span><span class="s">@"http://img04.tooopen.com/images/20130701/tooopen_10055061.jpg"</span>  <span class="nf">parameters</span><span class="p">:</span><span class="nb">nil</span> <span class="n">success</span><span class="o">:^</span><span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span> <span class="n">_Nonnull</span> <span class="n">task</span><span class="p">,</span> <span class="n">id</span>  <span class="n">_Nonnull</span> <span class="n">responseObject</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//这里知道得到的数据是一张图片，所以就直接这样生成图片了
+</span>    <span class="n">self</span><span class="p">.</span><span class="n">imgView</span><span class="p">.</span><span class="n">image</span> <span class="o">=</span> <span class="p">[</span><span class="n">UIImage</span> <span class="nf">imageWithData</span><span class="p">:</span><span class="n">responseObject</span><span class="p">];</span>
+    
+<span class="p">}</span> <span class="n">failure</span><span class="o">:^</span><span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span> <span class="n">_Nonnull</span> <span class="n">task</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span> <span class="n">_Nonnull</span> <span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+    
+    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
+    
+<span class="p">}];</span>
+</code></pre>
+</div>
+<p>从[AFHTTPSessionManager GET:parameters:success:failure:]方法来一步一步看看，manager都什么了什么。</p>
+<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nf">GET</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">URLString</span>
+                   <span class="nf">parameters</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">parameters</span>
+                      <span class="nf">success</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">task</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">))</span><span class="nv">success</span>
+                      <span class="nf">failure</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">task</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">))</span><span class="nv">failure</span>
+<span class="p">{</span>
+    <span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">dataTask</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">dataTaskWithHTTPMethod</span><span class="p">:</span><span class="s">@"GET"</span> <span class="nf">URLString</span><span class="p">:</span><span class="n">URLString</span> <span class="n">parameters</span><span class="o">:</span><span class="n">parameters</span> <span class="n">success</span><span class="o">:</span><span class="n">success</span> <span class="n">failure</span><span class="o">:</span><span class="n">failure</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">dataTask</span> <span class="nf">resume</span><span class="p">];</span>
+
+    <span class="k">return</span> <span class="n">dataTask</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>代码还是很少的，就是根据给定的URL地址调用本类的[AFHTTPSessionManager:dataTaskWithHTTPMethod:URLString:parameters:success:failure]方法生成一个dataTask然后启动它。这方法比较关键，一起来看看：</p>
+<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nf">dataTaskWithHTTPMethod</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">method</span>
+                                       <span class="nf">URLString</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">URLString</span>
+                                      <span class="nf">parameters</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">parameters</span>
+                                         <span class="nf">success</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">,</span> <span class="n">id</span><span class="p">))</span><span class="nv">success</span>
+                                         <span class="nf">failure</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="p">))</span><span class="nv">failure</span>
+<span class="p">{</span>
+    <span class="n">NSError</span> <span class="o">*</span><span class="n">serializationError</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="c1">//设置request，根据HTTP的请求方法添加参数
+</span>    <span class="n">NSMutableURLRequest</span> <span class="o">*</span><span class="n">request</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">requestSerializer</span> <span class="nf">requestWithMethod</span><span class="p">:</span><span class="n">method</span> <span class="nf">URLString</span><span class="p">:[[</span><span class="n">NSURL</span> <span class="nf">URLWithString</span><span class="p">:</span><span class="n">URLString</span> <span class="nf">relativeToURL</span><span class="p">:</span><span class="n">self</span><span class="p">.</span><span class="nf">baseURL</span><span class="p">]</span> <span class="n">absoluteString</span><span class="p">]</span> <span class="n">parameters</span><span class="o">:</span><span class="n">parameters</span> <span class="n">error</span><span class="o">:&amp;</span><span class="n">serializationError</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">serializationError</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">failure</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">dispatch_async</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">completionQueue</span> <span class="p">?:</span> <span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+                <span class="n">failure</span><span class="p">(</span><span class="nb">nil</span><span class="p">,</span> <span class="n">serializationError</span><span class="p">);</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">__block</span> <span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">dataTask</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="c1">//这个方法调用的是父类的方法
+</span>    <span class="n">dataTask</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">dataTaskWithRequest</span><span class="p">:</span><span class="n">request</span> <span class="nf">completionHandler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">NSURLResponse</span> <span class="o">*</span> <span class="n">__unused</span> <span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">failure</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">failure</span><span class="p">(</span><span class="n">dataTask</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">success</span><span class="p">(</span><span class="n">dataTask</span><span class="p">,</span> <span class="n">responseObject</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}];</span>
+
+    <span class="k">return</span> <span class="n">dataTask</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请求出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，笔者也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。</p>
+
+<p>–EOF–</p>
+
+                    ]]>
+                </content:encoded>
+                <guid isPermaLink="false">/objective-c/http/2017/05/19/AFNetworking3.0%E4%B9%8BHTTP%E8%AF%B7%E6%B1%82/</guid>
+                <description>
+                    
+                    本文主要分析AFNetworking的HTTP请求部分。
+                    
+                </description>
+                <pubDate>Fri, 19 May 2017 00:00:00 +0800</pubDate>
+                <author>冬阳</author>
+            </item>
+        
+    
+        
+            <item>
                 <title>POSIX线程之条件变量</title>
                 <link>http://localhost:4000/posix%E5%A4%9A%E7%BA%BF%E7%A8%8B/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/2017/05/16/POSIX%E7%BA%BF%E7%A8%8B%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/</link>
                 <content:encoded>
@@ -36,7 +254,7 @@
 
 <p>PS：原子操作是一旦开始就一直运行到结束，中间不会有任何的上下文切换，因此不需要同步。</p>
 
-<p>如果两线程几乎在同一时间对同一个变量做增量操作而不进行同步的话，结果可能出现比原来增加了也可能增加了2，具体要看第二个线程的开始操作获取的数值。</p>
+<p>如果两线程几乎在同一时间对同一个变量做增量操作而不进行同步的话，结果可能出现比原来增加了1也可能增加了2，具体要看第二个线程的开始操作获取的数值。</p>
 
 <h3 id="互斥量">互斥量</h3>
 
@@ -46,7 +264,7 @@
 
 <h3 id="条件变量">条件变量</h3>
 
-<p>条件变量是线程的别一种同步机制，与互斥一起使用时，允许线程以无竞争的等待方式等待特定的条件发生。它由互斥量保护，在线程改变条件之前必须首先锁住互斥量。</p>
+<p>条件变量是线程的另一种同步机制，与互斥一起使用时，允许线程以无竞争的等待方式等待特定的条件发生。它由互斥量保护，在线程改变条件之前必须首先锁住互斥量。</p>
 
 <p>回到前面提到的问题。前面说了，解法用到了互斥量和条件变量，来看看怎么用的：</p>
 <div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
@@ -216,32 +434,26 @@
 <p>先来看看，在我们启动一个应用程序的时候，观察一下主线程的RunLoop的状态。首先说一下，RunLoop的工作的mode：</p>
 <ul>
   <li>
-    <font color="#FF6100">NSDefaultRunLoopMode</font>
-    <p>RunLoop的默认Mode，空闲状态，也就是什么也不干的时候。</p>
+    <div><font color="#FF6100">NSDefaultRunLoopMode</font>：RunLoop的默认Mode，空闲状态，也就是什么也不干的时候。</div>
   </li>
   <li>
-    <font color="#FF6100">UITrackingRunLoopMode</font>
-    <p>有滑动等其它需要追踪的事件发生时，RunLoop处于此Mode，比如在滚动scrollView时。</p>
+    <div><font color="#FF6100">UITrackingRunLoopMode</font>：有滑动等其它需要追踪的事件发生时，RunLoop处于此Mode，比如在滚动scrollView时。</div>
   </li>
   <li>
-    <font color="#FF6100">NSInitializationRunLoopMode</font>
-    <p>这是一个Private RunLoopMode，App启动时处于此Mode，启动完成进入App主界面后App处于NSDefaultRunLoopMode</p>
+    <div><font color="#FF6100">NSInitializationRunLoopMode</font>：这是一个Private RunLoopMode，App启动时处于此Mode，启动完成进入App主界面后App处于NSDefaultRunLoopMode。</div>
   </li>
   <li>
-    <font color="#FF6100">NSRunLoopCommonModes</font>
-    <p>此Mode默认包含了NSDefaultRunLoopMode和UITrackingRunLoopMode。所以，当RunLoop运行在NSDefaultRunLoopMode或UITrackingRunLoopMode时，监听NSRunLoopCommonModes的Observer都会被回调。另外，还可以向NSRunLoopCommonModes里添加其它自定义的Mode。</p>
+    <div><font color="#FF6100">NSRunLoopCommonModes</font>：此Mode默认包含了NSDefaultRunLoopMode和UITrackingRunLoopMode。所以，当RunLoop运行在NSDefaultRunLoopMode或UITrackingRunLoopMode时，监听NSRunLoopCommonModes的Observer都会被回调。另外，还可以向NSRunLoopCommonModes里添加其它自定义的Mode。</div>
   </li>
 </ul>
 
 <p>每个mode下面又有timer，source和observer。timer是基于时间的触发器，我们在创建timer完的时候一定要把timer放进当前线程的RunLoop中，如果不是主线程还要将这个RunLoop启动，不然这个timer是不会触发的。source是事件产生的地方，系统提供了两个版本，也可以自定义source：</p>
 <ul>
   <li>
-    <font color="#FF6100">source0</font>
-    <p>处理App内部事件(特指non-port-based事件，这里的事件是一个广义的事件，包括但不限于UI事件)，App负责管理自己的事件触发，如：UIEvent(Touch事件等，GS发起到RunLoop运行再到事件回调到UI)、CFSocketRef.</p>
+    <div><font color="#FF6100">source0</font>：处理App内部事件(特指non-port-based事件，这里的事件是一个广义的事件，包括但不限于UI事件)，App负责管理自己的事件触发，如：UIEvent(Touch事件等，GS发起到RunLoop运行再到事件回调到UI)、CFSocketRef。</div>
   </li>
   <li>
-    <font color="#FF6100">source1</font>
-    <p>由RunLoop和内核管理，由Mach port驱动（特指port-based事件），如CFMachPort、CFMessagePort、NSSocketPort。特别要注意一下Mach port的概念，它是一个轻量级的进程间通讯的方式，可以理解为它是一个通讯通道，假如同时有几个进程都挂在这个通道上，那么其它进程向这个通道发送消息后，这些挂在这个通道上的进程都可以收到相应的消息。这个Port的概念非常重要，因为它是RunLoop休眠和被唤醒的关键，它是RunLoop与系统内核进行消息通讯的窗口。</p>
+    <div><font color="#FF6100">source1</font>：由RunLoop和内核管理，由Mach port驱动（特指port-based事件），如CFMachPort、CFMessagePort、NSSocketPort。特别要注意一下Mach port的概念，它是一个轻量级的进程间通讯的方式，可以理解为它是一个通讯通道，假如同时有几个进程都挂在这个通道上，那么其它进程向这个通道发送消息后，这些挂在这个通道上的进程都可以收到相应的消息。这个Port的概念非常重要，因为它是RunLoop休眠和被唤醒的关键，它是RunLoop与系统内核进行消息通讯的窗口。</div>
   </li>
 </ul>
 
