@@ -373,7 +373,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
 &lt;h2 id=&quot;正文&quot;&gt;正文&lt;/h2&gt;
 
-&lt;p&gt;RunLoop是什么？在windows下用windowsAPI做过开发的人对于基于消息循环的事件处理机制应该不会陌生，RunLoop和其差不多。从名字上看，它是一个loop而且是一个带条件的，同时又是一个”死循环”，但是它又很特殊，在没有事干的时候，这个循环处于闲等待的状态。写一个死循环容易：&lt;/p&gt;
+&lt;p&gt;RunLoop是什么？在windows下用MFC做过开发的人对于基于消息循环的事件处理机制应该不会陌生，RunLoop和其差不多。从名字上看，它是一个loop而且是一个带条件的，同时又是一个”死循环”，但是它又很特殊，在没有事干的时候，这个循环处于闲等待的状态。写一个死循环容易：&lt;/p&gt;
 &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;while&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
 
@@ -442,13 +442,14 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;p&gt;可以看到前四个描述了一个RunLoop的循环周期。&lt;/p&gt;
+&lt;h3 id=&quot;runloop和nsautoreleasepool的关系&quot;&gt;RunLoop和NSAutoreleasePool的关系&lt;/h3&gt;
 
 &lt;p&gt;这里得说一下NSAutoreleasePool，先来看看官方文档中怎么说的：&lt;/p&gt;
 &lt;blockquote&gt;
   &lt;p&gt;The Application Kit creates an autorelease pool on the main thread at the beginning of every cycle of the event loop, and drains it at the end, thereby releasing any autoreleased objects generated while processing an event. If you use the Application Kit, you therefore typically don’t have to create your own pools. If your application creates a lot of temporary autoreleased objects within the event loop, however, it may be beneficial to create “local” autorelease pools to help to minimize the peak memory footprint.&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;意思是说，应用程序在主线程开始的每个事件循环周期中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前笔者一直不太明白，自动释放池是怎么释放对象的。说完了来让我们试验一波：&lt;/p&gt;
+&lt;p&gt;意思是说，应用程序在主线程每个事件循环周期的开始中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前笔者一直不太明白，自动释放池是怎么释放对象的。说完了来让我们试验一波：&lt;/p&gt;
 &lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//ViewController.m
 &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ViewController&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;//注意label的内存管理语义，用weak也可以，不过weak在赋完值后，输出不了正确结果后面会解释
@@ -531,7 +532,8 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;跑起来&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
     &lt;span class=&quot;err&quot;&gt;@autoreleasepool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;label&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UILabel&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//这里生成的UILabel就注册到一个自动释放池里了，并且生成后并没有马上释放，也就是说self.label还是有值的哦，可以正常使用，但是编译器给出警告
+&lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;label&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UILabel&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
         &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;label&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;setText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;这是一个标签&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
     &lt;span class=&quot;c1&quot;&gt;//默认情况下,子线程是不会常驻的
