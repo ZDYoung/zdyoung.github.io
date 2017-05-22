@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705191111" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201705221014" type="text/css">
 
     <!-- Fonts -->
     
@@ -354,7 +354,7 @@
 </span>    <span class="c1">//只有常驻线程才能再次执行任务,因为线程中有runloop来处理事件了
 </span>    <span class="n">NSRunLoop</span> <span class="o">*</span> <span class="n">rl</span> <span class="o">=</span>  <span class="p">[</span><span class="n">NSRunLoop</span> <span class="nf">currentRunLoop</span><span class="p">];</span>
     
-    <span class="c1">//向线程添加一个port，这样可以维持线程，使其成为常驻线程，当然也可以添加一个timer/source像这样
+    <span class="c1">//向线程添加一个port，这样可以维持线程，使其成为常驻线程，当然也可以添加一个timer/source像下面这一行这样，个人觉得这样会浪费CPU的资源
 </span>    <span class="c1">//[NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(timerRun) userInfo:nil repeats:YES];
 </span>    <span class="p">[</span><span class="n">rl</span> <span class="nf">addPort</span><span class="p">:[</span><span class="n">NSMachPort</span> <span class="nf">port</span><span class="p">]</span> <span class="nf">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
 
@@ -368,10 +368,6 @@
 </span>    <span class="c1">//也就是说这个方法不会执行完,
 </span>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"end"</span><span class="p">);</span>
 <span class="p">}</span>
-<span class="o">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">timerRun</span>
-<span class="p">{</span>
-    <span class="c1">//这时不干事，只是用来维持子线程，timer的时间也可以用来设置循环同期的时候，
-</span><span class="p">}</span>
 <span class="o">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">touchesBegan</span><span class="o">:</span><span class="p">(</span><span class="n">NSSet</span><span class="o">&lt;</span><span class="n">UITouch</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="p">)</span><span class="n">touches</span> <span class="n">withEvent</span><span class="o">:</span><span class="p">(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="n">event</span>
 <span class="p">{</span>
     <span class="c1">// 让子线程再次执行任务
