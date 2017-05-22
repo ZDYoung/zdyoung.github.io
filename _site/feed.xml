@@ -7,6 +7,125 @@
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>NSTimer会保留目标对象</title>
+        <description>&lt;p&gt;标签： objectvie-c 计时器&lt;/p&gt;
+
+&lt;h2 id=&quot;前言&quot;&gt;前言&lt;/h2&gt;
+
+&lt;p&gt;在编写业务逻辑的时候，用到NSTimer的地方很多。比如，定期的更新窗口。对于它开发者文档中有如下描述：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;You use the NSTimer class to create timer objects or, more simply, timers. A timer waits until a certain time interval has elapsed and then fires, sending a specified message to a target object. For example, you could create an NSTimer object that sends a message to a window, telling it to update itself after a certain time interval.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这是官方对NSTimer的介绍，就是用来在一个指定的时间间隔内，发送个一消息给一个指定的对象做指定你想要做的事。提到它就顺带提一下CFRunLoopTimerRef，这两个其实是一个东西，只不过是不同框架里的。前者是属于Foundation里的，属于ARC的管理范围，后者是属于Core Foundation里的，基于C语言实现的一个框架，不属于ARC的管理范围。但是这两个框架里的很多东西是是等价的，只是名字不同而已。&lt;/p&gt;
+
+&lt;div&gt;&lt;font color=&quot;#FF6100&quot;&gt;PS：在ARC下编程，Cocoa框架下的类都在ARC的管理范围之下包括以NS开头的类。Cocoa是最重要的两个框架为：Foundation和UIKit。使用其他框架的时候要小心了，对象的内存管理需要我们自己来哦！这其中就包括Core Foundation。&lt;/font&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Timers work in conjunction with run loops.Note in particular that run loops maintain strong references to their timers, so you don’t have to maintain your own strong reference to a timer after you have added it to a run loop.A timer is not a real-time mechanism;it fires only when one of the run loop modes to which the timer has been added is running and able to check if the timer’s firing time has passed.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;上面是节选的一段，个人认为比较重要的。主要是说NSTimer是和RunLoop一起工作的，而且RunLoop会对加入其中的NSTimer保持一个强引用。对NSTimer来说，一旦添加进RunLoop中，我们就不需要在外部去维护一个NSTimer的强引用。NSTimer的时间间隔也不是实时，可能比实际的时候多一点，也可能少一点，而且它只在指定的mode中运行。关于RunLoop，&lt;a href=&quot;https://zdyoung.github.io/objective-c/runloop/2017/05/09/RunLoop%E5%B0%8F%E8%AE%B0/&quot;&gt;这是&lt;/a&gt;之前写的。&lt;/p&gt;
+
+&lt;h2 id=&quot;正文&quot;&gt;正文&lt;/h2&gt;
+
+&lt;p&gt;以前用计时器的时候，只顾着用了，也没想太多，在后来的学习当中，发现计时器也会持有目标对象从而产生保留环，而且对重复执行的计时器，这种后果不仅是漏了内存还可能有更加严重。以下面的代码为例：&lt;/p&gt;
+&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//Customer.h
+&lt;/span&gt;&lt;span class=&quot;cp&quot;&gt;#import &amp;lt;Foundation/Foundation.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Customer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NSObject&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@end&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;//Customer.m
+&lt;/span&gt;&lt;span class=&quot;cp&quot;&gt;#import &quot;MyTimer.h&quot;
+&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyTimer&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;instancetype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;init&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;super&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stop&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;invalidate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;__weak&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MyTimer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;scheduledTimerWithTimeInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dosomething&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;YES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dosomething&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;dosomething&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dealloc&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;invalidate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@end&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;//某个作用域
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Customer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cus&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Customer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cus&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;如果一切正常情况，当出了作用域之后cus，cus便会被释放，计时器也会失效。但是因为计时器持有了self，而计时器作为属性又被self持有了，这样就出现了保留环，所以就算出了作用域cus其实也没有被释放即dealloc方法没有执行，计时器也没有失效，依然做着事，这样很可能会出现严重后果，这取决于所做的事。这里除非手动调用stop方法使计时器失效。那有没有更好的办法呢？答案是肯定的，那就是通过块来解决。可以为NSTimer增加一个分类：&lt;/p&gt;
+&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//NSTimer+blockSupport.h
+&lt;/span&gt;&lt;span class=&quot;cp&quot;&gt;#import &amp;lt;Foundation/Foundation.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;blockSupport&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;block_scheduledTimerWithTimerInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimeInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;interval&lt;/span&gt;
+                                           &lt;span class=&quot;nf&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)())&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;block&lt;/span&gt;
+                                         &lt;span class=&quot;nf&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BOOL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;@end&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;//NSTimer+blockSupport.m
+&lt;/span&gt;&lt;span class=&quot;cp&quot;&gt;#import &quot;NSTimer+blockSupport.h&quot;
+&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;blockSupport&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;block_scheduledTimerWithTimerInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimeInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;interval&lt;/span&gt;
+                                             &lt;span class=&quot;nf&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)())&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;block&lt;/span&gt;
+                                           &lt;span class=&quot;nf&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BOOL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;repeats&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;scheduledTimerWithTimeInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;interval&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;blockInvoke&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;blockInvoke&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;timer&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;通过上面这个类方法创建的计时器，利用了userInfo参数将计时器要执行的任务封装成了块，该参数可以存放一个不透明值即万能值，只要计时器有效，该参数就会一直被保留。仅依靠这个分类还不行，还要对start方法修改如下：&lt;/p&gt;
+&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;__weak&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MyTimer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSTimer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;block_scheduledTimerWithTimerInterval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;dosomething&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeats&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;YES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;这样把计时器所做的事封装进了block，只要目标对象存在计时器就一直有效，而计时器捕获的只是self的一个弱引用，不会造成保留环。一旦目标对象被释放了，计时器立刻失效。以上内容参考了《Effectvie Objective-c》&lt;/p&gt;
+
+&lt;p&gt;–EOF–&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 22 May 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/objectvie-c/nstimer/2017/05/22/NSTimer%E4%BC%9A%E4%BF%9D%E7%95%99%E7%9B%AE%E6%A0%87%E5%AF%B9%E8%B1%A1/</link>
+        <guid isPermaLink="true">http://localhost:4000/objectvie-c/nstimer/2017/05/22/NSTimer%E4%BC%9A%E4%BF%9D%E7%95%99%E7%9B%AE%E6%A0%87%E5%AF%B9%E8%B1%A1/</guid>
+      </item>
+    
+      <item>
         <title>AFNetworking3.0之HTTP请求</title>
         <description>&lt;p&gt;标签： objective-c HTTP&lt;/p&gt;
 
@@ -16,7 +135,7 @@
 
 &lt;h2 id=&quot;正文&quot;&gt;正文&lt;/h2&gt;
 
-&lt;p&gt;AFNetworking3.0的代码比起以前的版本，精简了很多，对于笔者来说可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，笔者也不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。&lt;/p&gt;
+&lt;p&gt;AFNetworking3.0的代码比起以前的版本，精简了很多，可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，本文不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。&lt;/p&gt;
 
 &lt;p&gt;提到HTTP，就叉开一下，复习一下关于HTTP请求的东西。&lt;/p&gt;
 
@@ -99,7 +218,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;p&gt;好了，现在叉回来。前面讲过AFURLSessionManager是整个库的核心，因为在HTTP这一部分，都是在这个类的基础上实现的。通过源码也可以看到AFURLSessionManager这个类有1000多行代码而接下来要讲的AFHTTPSessionManager类，只有300行多一点，而且AFHTTPSessionManager是继承自AFURLSessionManager的，因此HTTP请求部分的绝大多数工作都交给了AFHTTPSessionManager的父类那部分。来看看整个库的类的构成：&lt;img src=&quot;/images/AFNetworking结构图.png&quot; alt=&quot;AFNetworking结构图&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;简单介绍一下这张图上的每个类吧，其实
-有些类的功能，笔者也没用过，不过往后可以试试：&lt;/p&gt;
+有些类的功能，我也没用过，不过往后可以试试：&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;
     &lt;div&gt;&lt;font color=&quot;#FF6100&quot;&gt;AFURLSessionManager:&lt;/font&gt;这个类前面讲过，它对NSURLSession及NSURLSessionTaskDelegate、NSURLSessionDataDelegate、NSURLSessionDownloadDelegate和NSURLSessionDelegate进行了封装，实现了诸如数据请求，下载和上传任务。&lt;/div&gt;
@@ -203,7 +322,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;p&gt;之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，笔者也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。&lt;/p&gt;
+&lt;p&gt;之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。&lt;/p&gt;
 
 &lt;p&gt;–EOF–&lt;/p&gt;
 </description>
@@ -449,7 +568,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
   &lt;p&gt;The Application Kit creates an autorelease pool on the main thread at the beginning of every cycle of the event loop, and drains it at the end, thereby releasing any autoreleased objects generated while processing an event. If you use the Application Kit, you therefore typically don’t have to create your own pools. If your application creates a lot of temporary autoreleased objects within the event loop, however, it may be beneficial to create “local” autorelease pools to help to minimize the peak memory footprint.&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;意思是说，应用程序在主线程每个事件循环周期的开始中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前笔者一直不太明白，自动释放池是怎么释放对象的。说完了来让我们试验一波：&lt;/p&gt;
+&lt;p&gt;意思是说，应用程序在主线程每个事件循环周期的开始中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前一直不太明白，自动释放池是怎么释放对象的，现在可以来试验一下了：&lt;/p&gt;
 &lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//ViewController.m
 &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ViewController&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;//注意label的内存管理语义，用weak也可以，不过weak在赋完值后，输出不了正确结果后面会解释
@@ -573,7 +692,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;span class=&quot;mi&quot;&gt;2017&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mo&quot;&gt;05&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;09&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;37&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;51&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;159&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;92859&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;12314616&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;这是一个标签&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;p&gt;当点击屏幕的时候，会在我们创建的线程内执行一次方法&lt;code class=&quot;highlighter-rouge&quot;&gt;againRun&lt;/code&gt;，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后&lt;code class=&quot;highlighter-rouge&quot;&gt;self.label = [[UILabel alloc] init];&lt;/code&gt;，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，笔者猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。&lt;/p&gt;
+&lt;p&gt;当点击屏幕的时候，会在我们创建的线程内执行一次方法&lt;code class=&quot;highlighter-rouge&quot;&gt;againRun&lt;/code&gt;，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后&lt;code class=&quot;highlighter-rouge&quot;&gt;self.label = [[UILabel alloc] init];&lt;/code&gt;，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。&lt;/p&gt;
 
 &lt;h3 id=&quot;runloop对timer的影响&quot;&gt;RunLoop对timer的影响&lt;/h3&gt;
 
@@ -648,7 +767,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
       </item>
     
       <item>
-        <title>oc中的黑魔法attribute</title>
+        <title>编译器指令attribute</title>
         <description>&lt;p&gt;标签： objective-c attribute&lt;/p&gt;
 
 &lt;hr /&gt;
@@ -704,7 +823,6 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;p&gt;这个笔者没用到过。&lt;/p&gt;
 
 &lt;p&gt;3.&lt;font color=&quot;#FF6100&quot;&gt;__attribute__((deprecated))&lt;/font&gt;,这个可能是大家见的最多了，苹果也经常干这个事，每隔一两个版本可能就会有那么几个API被废弃，然后提示我们用哪个API代替，在编译的时候就会发出警告。&lt;/p&gt;
 &lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deprecatedMethodWithMessage&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__attribute__&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deprecated&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;this method was deprecated in MyApp.app version 5.0.2, use newMethod instead&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
@@ -843,8 +961,8 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
 </description>
         <pubDate>Sat, 06 May 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/objective-c/attribute/2017/05/06/oc%E4%B8%AD%E7%9A%84%E9%BB%91%E9%AD%94%E6%B3%95attribute/</link>
-        <guid isPermaLink="true">http://localhost:4000/objective-c/attribute/2017/05/06/oc%E4%B8%AD%E7%9A%84%E9%BB%91%E9%AD%94%E6%B3%95attribute/</guid>
+        <link>http://localhost:4000/objective-c/attribute/2017/05/06/%E7%BC%96%E8%AF%91%E5%99%A8%E6%8C%87%E4%BB%A4attribute/</link>
+        <guid isPermaLink="true">http://localhost:4000/objective-c/attribute/2017/05/06/%E7%BC%96%E8%AF%91%E5%99%A8%E6%8C%87%E4%BB%A4attribute/</guid>
       </item>
     
       <item>
@@ -879,7 +997,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;span class=&quot;k&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFURLSessionTaskCompletionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLResponse&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;p&gt;这里列出了该类所有的block，有没有很吓人，刚开始看的时候，我也看的头疼，后来调试的时候发现在本文接下来要讲的内容中，只用到了两个分别是AFURLSessionTaskCompletionHandler和AFURLSessionDownloadTaskDidFinishDownloadingBlock，这两个block都是delegate在完成代理后调用的。说明AFURLSessionManager中的block属性打酱油了，那我就很好奇了，既然是打酱油的那还要它干吗？其实不是，我们先来仔细观察一下它们的名字——objective-c的命名都是见名知意的，这一点笔者感觉很不错——以本文的下载为例，AFURLSessionDownloadTaskDidFinishDownloadingBlock意：下载任务完成时的block。那我们怎么去使用这个呢？呆会就讲。&lt;/p&gt;
+&lt;p&gt;这里列出了该类所有的block，有没有很吓人，刚开始看的时候，我也看的头疼，后来调试的时候发现在本文接下来要讲的内容中，只用到了两个分别是AFURLSessionTaskCompletionHandler和AFURLSessionDownloadTaskDidFinishDownloadingBlock，这两个block都是delegate在完成代理后调用的。说明AFURLSessionManager中的block属性打酱油了，那我就很好奇了，既然是打酱油的那还要它干吗？其实不是，我们先来仔细观察一下它们的名字——objective-c的命名都是见名知意的，这一点我感觉很不错——以本文的下载为例，AFURLSessionDownloadTaskDidFinishDownloadingBlock意：下载任务完成时的block。那我们怎么去使用这个呢？呆会就讲。&lt;/p&gt;
 
 &lt;h2 id=&quot;正文&quot;&gt;正文&lt;/h2&gt;
 
@@ -919,7 +1037,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;p&gt;这里我在网上随便找了一张图片，然后还设置了manager的一个AFURLSessionDownloadTaskDidFinishDownloadingBlock，就是刚才说那些打酱油中的block中的一个。笔者在这里只是简单的打印了一下location，并没有返回一个路径，注意哦，这个block要返回一个路径的哦，这个路径是用来存放我们下载的图片的。&lt;/p&gt;
+&lt;p&gt;这里我在网上随便找了一张图片，然后还设置了manager的一个AFURLSessionDownloadTaskDidFinishDownloadingBlock，就是刚才说那些打酱油中的block中的一个。在这里只是简单的打印了一下location，并没有返回一个路径，注意哦，这个block要返回一个路径的哦，这个路径是用来存放我们下载的图片的。&lt;/p&gt;
 
 &lt;p&gt;这里通过manager实例方法来创建downloadTask:&lt;/p&gt;
 &lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionDownloadTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;downloadTaskWithRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLRequest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;request&lt;/span&gt;
@@ -1072,7 +1190,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;/div&gt;
 &lt;p&gt;block的用法有没有很神奇它竟然捕获从最外面传进来的destination，并且保存到现在，而且现在要执行它来返回图片要保存的URL。&lt;/p&gt;
 
-&lt;p&gt;到这里基本也就快结束了，执行完，就会进入这个[AFURLSessionManagerTaskDelegate URLSession:task:didCompleteWithError:]函数里了，这一步和数据请求没有什么区别。经过这么多调用，图片也就下载完了。前面笔者设置manager的downloadTaskDidFinishDownloading属性，这个笔者认为可以用来返回指定的URL，也可以用来做一些，下载完成后的后续处理工作。&lt;/p&gt;
+&lt;p&gt;到这里基本也就快结束了，执行完，就会进入这个[AFURLSessionManagerTaskDelegate URLSession:task:didCompleteWithError:]函数里了，这一步和数据请求没有什么区别。经过这么多调用，图片也就下载完了。前面设置manager的downloadTaskDidFinishDownloading属性，这个个人认为可以用来返回指定的URL，也可以用来做一些，下载完成后的后续处理工作。&lt;/p&gt;
 
 &lt;p&gt;—EOF—&lt;/p&gt;
 
@@ -1100,9 +1218,9 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
 &lt;p&gt;AFURLSessionManagerTaskDelegate这个类从名字上看就知道，它是用来实现代理的，所有的网络请求回调都是经过它。呆会通过一个实际的例子来的说明。&lt;/p&gt;
 
-&lt;p&gt;那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，笔者还没有能过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的&lt;code class=&quot;highlighter-rouge&quot;&gt;resume&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;suspend&lt;/code&gt;进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。&lt;/p&gt;
+&lt;p&gt;那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，我还没有通过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的&lt;code class=&quot;highlighter-rouge&quot;&gt;resume&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;suspend&lt;/code&gt;进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。&lt;/p&gt;
 
-&lt;p&gt;接下来，笔者就以官方给出的例子跟踪一下，它的调用过程以下是源码：&lt;/p&gt;
+&lt;p&gt;接下来，以官方给出的例子跟踪一下，它的调用过程以下是源码：&lt;/p&gt;
 &lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionConfiguration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionConfiguration&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultSessionConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;AFURLSessionManager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFURLSessionManager&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;initWithSessionConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
 

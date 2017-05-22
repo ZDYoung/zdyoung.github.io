@@ -22,9 +22,9 @@ categories: objective-c AFNetworking
 
 AFURLSessionManagerTaskDelegate这个类从名字上看就知道，它是用来实现代理的，所有的网络请求回调都是经过它。呆会通过一个实际的例子来的说明。
 
-那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，笔者还没有能过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的`resume`和`suspend`进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。
+那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，我还没有通过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的`resume`和`suspend`进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。
 
-接下来，笔者就以官方给出的例子跟踪一下，它的调用过程以下是源码：
+接下来，以官方给出的例子跟踪一下，它的调用过程以下是源码：
 ```objc
 NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
 AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];

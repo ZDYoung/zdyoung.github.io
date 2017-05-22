@@ -14,7 +14,7 @@ categories: objective-c HTTP
 
 ## 正文
 
-AFNetworking3.0的代码比起以前的版本，精简了很多，对于笔者来说可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，笔者也不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。
+AFNetworking3.0的代码比起以前的版本，精简了很多，可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，本文不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。
 
 提到HTTP，就叉开一下，复习一下关于HTTP请求的东西。
 
@@ -76,7 +76,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 好了，现在叉回来。前面讲过AFURLSessionManager是整个库的核心，因为在HTTP这一部分，都是在这个类的基础上实现的。通过源码也可以看到AFURLSessionManager这个类有1000多行代码而接下来要讲的AFHTTPSessionManager类，只有300行多一点，而且AFHTTPSessionManager是继承自AFURLSessionManager的，因此HTTP请求部分的绝大多数工作都交给了AFHTTPSessionManager的父类那部分。来看看整个库的类的构成：![AFNetworking结构图](/images/AFNetworking结构图.png)
 
 简单介绍一下这张图上的每个类吧，其实
-有些类的功能，笔者也没用过，不过往后可以试试：
+有些类的功能，我也没用过，不过往后可以试试：
 *   <div><font color="#FF6100">AFURLSessionManager:</font>这个类前面讲过，它对NSURLSession及NSURLSessionTaskDelegate、NSURLSessionDataDelegate、NSURLSessionDownloadDelegate和NSURLSessionDelegate进行了封装，实现了诸如数据请求，下载和上传任务。</div>
 *   <div><font color="#FF6100">AFURLConnectionOperation:</font>它是NSOperation的子类，实现了NSURLConnection代理方法，这是iOS 6 或 Mac OS X 10.8以前用的API，现在基本不用了。</div>
 *   <div><font color="#FF6100">AFHTTPSessionManager:</font>这是基于NSURLSession实现的用于HTTP的GET、POST等类，也是本文主要讲的东西。</div>
@@ -160,6 +160,6 @@ manager.responseSerializer = [AFHTTPResponseSerializer serializer];
     return dataTask;
 }
 ```
-之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，笔者也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。
+之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。
 
 --EOF--

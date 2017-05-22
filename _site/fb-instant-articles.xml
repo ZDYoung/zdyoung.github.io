@@ -9,6 +9,137 @@
     
         
             <item>
+                <title>NSTimer会保留目标对象</title>
+                <link>http://localhost:4000/objectvie-c/nstimer/2017/05/22/NSTimer%E4%BC%9A%E4%BF%9D%E7%95%99%E7%9B%AE%E6%A0%87%E5%AF%B9%E8%B1%A1/</link>
+                <content:encoded>
+                    <![CDATA[
+                    <p>标签： objectvie-c 计时器</p>
+
+<h2 id="前言">前言</h2>
+
+<p>在编写业务逻辑的时候，用到NSTimer的地方很多。比如，定期的更新窗口。对于它开发者文档中有如下描述：</p>
+<blockquote>
+  <p>You use the NSTimer class to create timer objects or, more simply, timers. A timer waits until a certain time interval has elapsed and then fires, sending a specified message to a target object. For example, you could create an NSTimer object that sends a message to a window, telling it to update itself after a certain time interval.</p>
+</blockquote>
+
+<p>这是官方对NSTimer的介绍，就是用来在一个指定的时间间隔内，发送个一消息给一个指定的对象做指定你想要做的事。提到它就顺带提一下CFRunLoopTimerRef，这两个其实是一个东西，只不过是不同框架里的。前者是属于Foundation里的，属于ARC的管理范围，后者是属于Core Foundation里的，基于C语言实现的一个框架，不属于ARC的管理范围。但是这两个框架里的很多东西是是等价的，只是名字不同而已。</p>
+
+<div><font color="#FF6100">PS：在ARC下编程，Cocoa框架下的类都在ARC的管理范围之下包括以NS开头的类。Cocoa是最重要的两个框架为：Foundation和UIKit。使用其他框架的时候要小心了，对象的内存管理需要我们自己来哦！这其中就包括Core Foundation。</font></div>
+
+<blockquote>
+  <p>Timers work in conjunction with run loops.Note in particular that run loops maintain strong references to their timers, so you don’t have to maintain your own strong reference to a timer after you have added it to a run loop.A timer is not a real-time mechanism;it fires only when one of the run loop modes to which the timer has been added is running and able to check if the timer’s firing time has passed.</p>
+</blockquote>
+
+<p>上面是节选的一段，个人认为比较重要的。主要是说NSTimer是和RunLoop一起工作的，而且RunLoop会对加入其中的NSTimer保持一个强引用。对NSTimer来说，一旦添加进RunLoop中，我们就不需要在外部去维护一个NSTimer的强引用。NSTimer的时间间隔也不是实时，可能比实际的时候多一点，也可能少一点，而且它只在指定的mode中运行。关于RunLoop，<a href="https://zdyoung.github.io/objective-c/runloop/2017/05/09/RunLoop%E5%B0%8F%E8%AE%B0/">这是</a>之前写的。</p>
+
+<h2 id="正文">正文</h2>
+
+<p>以前用计时器的时候，只顾着用了，也没想太多，在后来的学习当中，发现计时器也会持有目标对象从而产生保留环，而且对重复执行的计时器，这种后果不仅是漏了内存还可能有更加严重。以下面的代码为例：</p>
+<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//Customer.h
+</span><span class="cp">#import &lt;Foundation/Foundation.h&gt;
+</span>
+<span class="k">@interface</span> <span class="nc">Customer</span> <span class="p">:</span> <span class="nc">NSObject</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSTimer</span> <span class="o">*</span><span class="n">timer</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">start</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">stop</span><span class="p">;</span>
+<span class="k">@end</span>
+
+<span class="c1">//Customer.m
+</span><span class="cp">#import "MyTimer.h"
+</span><span class="k">@implementation</span> <span class="nc">MyTimer</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">instancetype</span><span class="p">)</span><span class="n">init</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">stop</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">timer</span> <span class="nf">invalidate</span><span class="p">];</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">timer</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">start</span>
+<span class="p">{</span>
+    <span class="n">__weak</span> <span class="n">MyTimer</span> <span class="o">*</span><span class="n">timer</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">timer</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSTimer</span> <span class="nf">scheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span> <span class="nf">target</span><span class="p">:</span><span class="n">self</span> <span class="n">selector</span><span class="o">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">dosomething</span><span class="p">)</span> <span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span> <span class="n">repeats</span><span class="o">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dosomething</span>
+<span class="p">{</span>
+    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"dosomething"</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">timer</span> <span class="nf">invalidate</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="k">@end</span>
+
+<span class="c1">//某个作用域
+</span><span class="p">{</span>
+    <span class="n">Customer</span> <span class="o">*</span><span class="n">cus</span> <span class="o">=</span> <span class="p">[[</span><span class="n">Customer</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">cus</span> <span class="nf">start</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>如果一切正常情况，当出了作用域之后cus，cus便会被释放，计时器也会失效。但是因为计时器持有了self，而计时器作为属性又被self持有了，这样就出现了保留环，所以就算出了作用域cus其实也没有被释放即dealloc方法没有执行，计时器也没有失效，依然做着事，这样很可能会出现严重后果，这取决于所做的事。这里除非手动调用stop方法使计时器失效。那有没有更好的办法呢？答案是肯定的，那就是通过块来解决。可以为NSTimer增加一个分类：</p>
+<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//NSTimer+blockSupport.h
+</span><span class="cp">#import &lt;Foundation/Foundation.h&gt;
+</span>
+<span class="k">@interface</span> <span class="nc">NSTimer</span> <span class="p">(</span><span class="nl">blockSupport</span><span class="p">)</span>
+<span class="k">+</span> <span class="p">(</span><span class="n">NSTimer</span><span class="o">*</span><span class="p">)</span><span class="nf">block_scheduledTimerWithTimerInterval</span><span class="p">:(</span><span class="n">NSTimeInterval</span><span class="p">)</span><span class="nv">interval</span>
+                                           <span class="nf">block</span><span class="p">:(</span><span class="kt">void</span><span class="p">(</span><span class="o">^</span><span class="p">)())</span><span class="nv">block</span>
+                                         <span class="nf">repeats</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">repeats</span><span class="p">;</span>
+
+<span class="k">@end</span>
+
+<span class="c1">//NSTimer+blockSupport.m
+</span><span class="cp">#import "NSTimer+blockSupport.h"
+</span>
+<span class="k">@implementation</span> <span class="nc">NSTimer</span> <span class="p">(</span><span class="nl">blockSupport</span><span class="p">)</span>
+<span class="k">+</span> <span class="p">(</span><span class="n">NSTimer</span> <span class="o">*</span><span class="p">)</span><span class="nf">block_scheduledTimerWithTimerInterval</span><span class="p">:(</span><span class="n">NSTimeInterval</span><span class="p">)</span><span class="nv">interval</span>
+                                             <span class="nf">block</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)())</span><span class="nv">block</span>
+                                           <span class="nf">repeats</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">repeats</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">self</span> <span class="nf">scheduledTimerWithTimeInterval</span><span class="p">:</span><span class="n">interval</span> <span class="nf">target</span><span class="p">:</span><span class="n">self</span> <span class="n">selector</span><span class="o">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">blockInvoke</span><span class="o">:</span><span class="p">)</span> <span class="n">userInfo</span><span class="o">:</span><span class="p">[</span><span class="n">block</span> <span class="nf">copy</span><span class="p">]</span> <span class="n">repeats</span><span class="o">:</span><span class="n">repeats</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="k">+</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">blockInvoke</span><span class="p">:(</span><span class="n">NSTimer</span> <span class="o">*</span><span class="p">)</span><span class="nv">timer</span>
+<span class="p">{</span>
+    <span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="n">block</span><span class="p">)()</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">userInfo</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">block</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre>
+</div>
+<p>通过上面这个类方法创建的计时器，利用了userInfo参数将计时器要执行的任务封装成了块，该参数可以存放一个不透明值即万能值，只要计时器有效，该参数就会一直被保留。仅依靠这个分类还不行，还要对start方法修改如下：</p>
+<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">start</span>
+<span class="p">{</span>
+    <span class="n">__weak</span> <span class="n">MyTimer</span> <span class="o">*</span><span class="n">timer</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">timer</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSTimer</span> <span class="nf">block_scheduledTimerWithTimerInterval</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span> <span class="nf">block</span><span class="p">:</span><span class="o">^</span><span class="p">{</span>
+        <span class="p">[</span><span class="n">timer</span> <span class="nf">dosomething</span><span class="p">];</span>
+    <span class="p">}</span> <span class="n">repeats</span><span class="o">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>这样把计时器所做的事封装进了block，只要目标对象存在计时器就一直有效，而计时器捕获的只是self的一个弱引用，不会造成保留环。一旦目标对象被释放了，计时器立刻失效。以上内容参考了《Effectvie Objective-c》</p>
+
+<p>–EOF–</p>
+
+
+                    ]]>
+                </content:encoded>
+                <guid isPermaLink="false">/objectvie-c/nstimer/2017/05/22/NSTimer%E4%BC%9A%E4%BF%9D%E7%95%99%E7%9B%AE%E6%A0%87%E5%AF%B9%E8%B1%A1/</guid>
+                <description>
+                    
+                    在开发的过程当中，有很多地方会用到NSTimer。在创建一个NSTimer的时候会要求用户指定一个target，指定完之后这个timer是会保留这个target，千万要注意，不然后果很严重。
+                    
+                </description>
+                <pubDate>Mon, 22 May 2017 00:00:00 +0800</pubDate>
+                <author>冬阳</author>
+            </item>
+        
+    
+        
+            <item>
                 <title>AFNetworking3.0之HTTP请求</title>
                 <link>http://localhost:4000/objective-c/http/2017/05/19/AFNetworking3.0%E4%B9%8BHTTP%E8%AF%B7%E6%B1%82/</link>
                 <content:encoded>
@@ -21,7 +152,7 @@
 
 <h2 id="正文">正文</h2>
 
-<p>AFNetworking3.0的代码比起以前的版本，精简了很多，对于笔者来说可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，笔者也不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。</p>
+<p>AFNetworking3.0的代码比起以前的版本，精简了很多，可读性也大大的提高了。在这版本中，它的实现是对苹果给出的两套有关于网络请求的API及其代理的封装分别为:NSURLSession和NSURLConnection。其中NSURLSession是在iOS 7 或 Mac OS X 10.9以后才出现的API旨在用来替代NSURLConnection。为了兼容以前的代码，库里面还是把NSURLConnection加进来了。之前写关于AFNetworking的博客都是基于NSURLSession实现的，本文不打算讲AFNetworking基于NSURLConnection实现的部分，必竟现在都不太用了。</p>
 
 <p>提到HTTP，就叉开一下，复习一下关于HTTP请求的东西。</p>
 
@@ -104,7 +235,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 <p>好了，现在叉回来。前面讲过AFURLSessionManager是整个库的核心，因为在HTTP这一部分，都是在这个类的基础上实现的。通过源码也可以看到AFURLSessionManager这个类有1000多行代码而接下来要讲的AFHTTPSessionManager类，只有300行多一点，而且AFHTTPSessionManager是继承自AFURLSessionManager的，因此HTTP请求部分的绝大多数工作都交给了AFHTTPSessionManager的父类那部分。来看看整个库的类的构成：<img src="/images/AFNetworking结构图.png" alt="AFNetworking结构图" /></p>
 
 <p>简单介绍一下这张图上的每个类吧，其实
-有些类的功能，笔者也没用过，不过往后可以试试：</p>
+有些类的功能，我也没用过，不过往后可以试试：</p>
 <ul>
   <li>
     <div><font color="#FF6100">AFURLSessionManager:</font>这个类前面讲过，它对NSURLSession及NSURLSessionTaskDelegate、NSURLSessionDataDelegate、NSURLSessionDownloadDelegate和NSURLSessionDelegate进行了封装，实现了诸如数据请求，下载和上传任务。</div>
@@ -208,7 +339,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 <span class="p">}</span>
 </code></pre>
 </div>
-<p>之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，笔者也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。</p>
+<p>之所以说很关键，是因为它做了两次事，一是生成request，二是调用了父类的方法，用于设置代理，回调之类的，前面说过AFHTTPSessionManager继承自AFURLSessionManager的。这样AFHTTPSessionManager把剩下的部分全部分交给了AFURLSessionManager部分。对于AFURLSessionManager不熟悉的请出门左拐。库中的AFURLRequestSerialization和AFHTTPResponseSerializer也挺重要的，找个时间看看。到这里整个库也差不多看了一半多吧。写的这些都是根据官方给出的用法，去一点一点看探究它的实现。刚开始的时候，也想造个轮子，但是慢慢地发现造轮子考虑的东西太多，费时费力，而且又有写好开源的轮子，何不拿来用呢。世界这么大，得把时间用到别的地方去。用归用，但是也得看看源码，看看人家是怎么实现的，不是一个好的使用者，肯定不适合造轮子。</p>
 
 <p>–EOF–</p>
 
@@ -478,7 +609,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
   <p>The Application Kit creates an autorelease pool on the main thread at the beginning of every cycle of the event loop, and drains it at the end, thereby releasing any autoreleased objects generated while processing an event. If you use the Application Kit, you therefore typically don’t have to create your own pools. If your application creates a lot of temporary autoreleased objects within the event loop, however, it may be beneficial to create “local” autorelease pools to help to minimize the peak memory footprint.</p>
 </blockquote>
 
-<p>意思是说，应用程序在主线程每个事件循环周期的开始中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前笔者一直不太明白，自动释放池是怎么释放对象的。说完了来让我们试验一波：</p>
+<p>意思是说，应用程序在主线程每个事件循环周期的开始中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前一直不太明白，自动释放池是怎么释放对象的，现在可以来试验一下了：</p>
 <div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//ViewController.m
 </span><span class="k">@interface</span> <span class="nc">ViewController</span> <span class="p">()</span>
 <span class="c1">//注意label的内存管理语义，用weak也可以，不过weak在赋完值后，输出不了正确结果后面会解释
@@ -602,7 +733,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 <span class="mi">2017</span><span class="o">-</span><span class="mo">05</span><span class="o">-</span><span class="mi">09</span> <span class="mi">11</span><span class="o">:</span><span class="mi">37</span><span class="o">:</span><span class="mi">51</span><span class="p">.</span><span class="mi">159</span> <span class="n">copy</span><span class="p">[</span><span class="mi">92859</span><span class="o">:</span><span class="mi">12314616</span><span class="p">]</span> <span class="err">这是一个标签</span>
 </code></pre>
 </div>
-<p>当点击屏幕的时候，会在我们创建的线程内执行一次方法<code class="highlighter-rouge">againRun</code>，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后<code class="highlighter-rouge">self.label = [[UILabel alloc] init];</code>，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，笔者猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。</p>
+<p>当点击屏幕的时候，会在我们创建的线程内执行一次方法<code class="highlighter-rouge">againRun</code>，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后<code class="highlighter-rouge">self.label = [[UILabel alloc] init];</code>，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。</p>
 
 <h3 id="runloop对timer的影响">RunLoop对timer的影响</h3>
 
@@ -686,8 +817,8 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
     
         
             <item>
-                <title>oc中的黑魔法attribute</title>
-                <link>http://localhost:4000/objective-c/attribute/2017/05/06/oc%E4%B8%AD%E7%9A%84%E9%BB%91%E9%AD%94%E6%B3%95attribute/</link>
+                <title>编译器指令attribute</title>
+                <link>http://localhost:4000/objective-c/attribute/2017/05/06/%E7%BC%96%E8%AF%91%E5%99%A8%E6%8C%87%E4%BB%A4attribute/</link>
                 <content:encoded>
                     <![CDATA[
                     <p>标签： objective-c attribute</p>
@@ -745,7 +876,6 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 <span class="p">}</span>
 </code></pre>
 </div>
-<p>这个笔者没用到过。</p>
 
 <p>3.<font color="#FF6100">__attribute__((deprecated))</font>,这个可能是大家见的最多了，苹果也经常干这个事，每隔一两个版本可能就会有那么几个API被废弃，然后提示我们用哪个API代替，在编译的时候就会发出警告。</p>
 <div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">deprecatedMethodWithMessage</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">deprecated</span><span class="p">(</span><span class="s">"this method was deprecated in MyApp.app version 5.0.2, use newMethod instead"</span><span class="p">)))</span>
@@ -885,7 +1015,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
                     ]]>
                 </content:encoded>
-                <guid isPermaLink="false">/objective-c/attribute/2017/05/06/oc%E4%B8%AD%E7%9A%84%E9%BB%91%E9%AD%94%E6%B3%95attribute/</guid>
+                <guid isPermaLink="false">/objective-c/attribute/2017/05/06/%E7%BC%96%E8%AF%91%E5%99%A8%E6%8C%87%E4%BB%A4attribute/</guid>
                 <description>
                     
                     attribute是编译器为我们提供的一个指令，在编程过程中善用它能为我们带来意想不到的好处。
@@ -932,7 +1062,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 <span class="k">typedef</span> <span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="n">AFURLSessionTaskCompletionHandler</span><span class="p">)(</span><span class="n">NSURLResponse</span> <span class="o">*</span><span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">);</span>
 </code></pre>
 </div>
-<p>这里列出了该类所有的block，有没有很吓人，刚开始看的时候，我也看的头疼，后来调试的时候发现在本文接下来要讲的内容中，只用到了两个分别是AFURLSessionTaskCompletionHandler和AFURLSessionDownloadTaskDidFinishDownloadingBlock，这两个block都是delegate在完成代理后调用的。说明AFURLSessionManager中的block属性打酱油了，那我就很好奇了，既然是打酱油的那还要它干吗？其实不是，我们先来仔细观察一下它们的名字——objective-c的命名都是见名知意的，这一点笔者感觉很不错——以本文的下载为例，AFURLSessionDownloadTaskDidFinishDownloadingBlock意：下载任务完成时的block。那我们怎么去使用这个呢？呆会就讲。</p>
+<p>这里列出了该类所有的block，有没有很吓人，刚开始看的时候，我也看的头疼，后来调试的时候发现在本文接下来要讲的内容中，只用到了两个分别是AFURLSessionTaskCompletionHandler和AFURLSessionDownloadTaskDidFinishDownloadingBlock，这两个block都是delegate在完成代理后调用的。说明AFURLSessionManager中的block属性打酱油了，那我就很好奇了，既然是打酱油的那还要它干吗？其实不是，我们先来仔细观察一下它们的名字——objective-c的命名都是见名知意的，这一点我感觉很不错——以本文的下载为例，AFURLSessionDownloadTaskDidFinishDownloadingBlock意：下载任务完成时的block。那我们怎么去使用这个呢？呆会就讲。</p>
 
 <h2 id="正文">正文</h2>
 
@@ -972,7 +1102,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
 </code></pre>
 </div>
-<p>这里我在网上随便找了一张图片，然后还设置了manager的一个AFURLSessionDownloadTaskDidFinishDownloadingBlock，就是刚才说那些打酱油中的block中的一个。笔者在这里只是简单的打印了一下location，并没有返回一个路径，注意哦，这个block要返回一个路径的哦，这个路径是用来存放我们下载的图片的。</p>
+<p>这里我在网上随便找了一张图片，然后还设置了manager的一个AFURLSessionDownloadTaskDidFinishDownloadingBlock，就是刚才说那些打酱油中的block中的一个。在这里只是简单的打印了一下location，并没有返回一个路径，注意哦，这个block要返回一个路径的哦，这个路径是用来存放我们下载的图片的。</p>
 
 <p>这里通过manager实例方法来创建downloadTask:</p>
 <div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSURLSessionDownloadTask</span> <span class="o">*</span><span class="p">)</span><span class="nf">downloadTaskWithRequest</span><span class="p">:(</span><span class="n">NSURLRequest</span> <span class="o">*</span><span class="p">)</span><span class="nv">request</span>
@@ -1125,7 +1255,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 </div>
 <p>block的用法有没有很神奇它竟然捕获从最外面传进来的destination，并且保存到现在，而且现在要执行它来返回图片要保存的URL。</p>
 
-<p>到这里基本也就快结束了，执行完，就会进入这个[AFURLSessionManagerTaskDelegate URLSession:task:didCompleteWithError:]函数里了，这一步和数据请求没有什么区别。经过这么多调用，图片也就下载完了。前面笔者设置manager的downloadTaskDidFinishDownloading属性，这个笔者认为可以用来返回指定的URL，也可以用来做一些，下载完成后的后续处理工作。</p>
+<p>到这里基本也就快结束了，执行完，就会进入这个[AFURLSessionManagerTaskDelegate URLSession:task:didCompleteWithError:]函数里了，这一步和数据请求没有什么区别。经过这么多调用，图片也就下载完了。前面设置manager的downloadTaskDidFinishDownloading属性，这个个人认为可以用来返回指定的URL，也可以用来做一些，下载完成后的后续处理工作。</p>
 
 <p>—EOF—</p>
 
@@ -1165,9 +1295,9 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 
 <p>AFURLSessionManagerTaskDelegate这个类从名字上看就知道，它是用来实现代理的，所有的网络请求回调都是经过它。呆会通过一个实际的例子来的说明。</p>
 
-<p>那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，笔者还没有能过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的<code class="highlighter-rouge">resume</code>和<code class="highlighter-rouge">suspend</code>进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。</p>
+<p>那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，我还没有通过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的<code class="highlighter-rouge">resume</code>和<code class="highlighter-rouge">suspend</code>进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。</p>
 
-<p>接下来，笔者就以官方给出的例子跟踪一下，它的调用过程以下是源码：</p>
+<p>接下来，以官方给出的例子跟踪一下，它的调用过程以下是源码：</p>
 <div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="n">configuration</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLSessionConfiguration</span> <span class="nf">defaultSessionConfiguration</span><span class="p">];</span>
 <span class="n">AFURLSessionManager</span> <span class="o">*</span><span class="n">manager</span> <span class="o">=</span> <span class="p">[[</span><span class="n">AFURLSessionManager</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithSessionConfiguration</span><span class="p">:</span><span class="n">configuration</span><span class="p">];</span>
 

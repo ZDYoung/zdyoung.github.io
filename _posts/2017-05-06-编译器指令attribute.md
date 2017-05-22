@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      oc中的黑魔法attribute
+title:      编译器指令attribute
 date:       2017-05-06
 summary:    attribute是编译器为我们提供的一个指令，在编程过程中善用它能为我们带来意想不到的好处。
 categories: objective-c attribute 
@@ -61,7 +61,6 @@ static void blockCleanUp(__strong void(^*block)(void)) {
     NSLog(@"hello");
 }
 ```
-这个笔者没用到过。
 
 3.<font color="#FF6100" >__attribute__((deprecated))</font>,这个可能是大家见的最多了，苹果也经常干这个事，每隔一两个版本可能就会有那么几个API被废弃，然后提示我们用哪个API代替，在编译的时候就会发出警告。
 ```objc

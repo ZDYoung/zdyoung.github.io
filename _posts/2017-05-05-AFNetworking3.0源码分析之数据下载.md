@@ -36,7 +36,7 @@ typedef void (^AFURLSessionDownloadTaskDidResumeBlock)(NSURLSession *session, NS
 
 typedef void (^AFURLSessionTaskCompletionHandler)(NSURLResponse *response, id responseObject, NSError *error);
 ```
-这里列出了该类所有的block，有没有很吓人，刚开始看的时候，我也看的头疼，后来调试的时候发现在本文接下来要讲的内容中，只用到了两个分别是AFURLSessionTaskCompletionHandler和AFURLSessionDownloadTaskDidFinishDownloadingBlock，这两个block都是delegate在完成代理后调用的。说明AFURLSessionManager中的block属性打酱油了，那我就很好奇了，既然是打酱油的那还要它干吗？其实不是，我们先来仔细观察一下它们的名字——objective-c的命名都是见名知意的，这一点笔者感觉很不错——以本文的下载为例，AFURLSessionDownloadTaskDidFinishDownloadingBlock意：下载任务完成时的block。那我们怎么去使用这个呢？呆会就讲。
+这里列出了该类所有的block，有没有很吓人，刚开始看的时候，我也看的头疼，后来调试的时候发现在本文接下来要讲的内容中，只用到了两个分别是AFURLSessionTaskCompletionHandler和AFURLSessionDownloadTaskDidFinishDownloadingBlock，这两个block都是delegate在完成代理后调用的。说明AFURLSessionManager中的block属性打酱油了，那我就很好奇了，既然是打酱油的那还要它干吗？其实不是，我们先来仔细观察一下它们的名字——objective-c的命名都是见名知意的，这一点我感觉很不错——以本文的下载为例，AFURLSessionDownloadTaskDidFinishDownloadingBlock意：下载任务完成时的block。那我们怎么去使用这个呢？呆会就讲。
 
 ## 正文
 
@@ -76,7 +76,7 @@ id block = ^(NSURLSession *session, NSURLSessionDownloadTask *downloadTask, NSUR
 [downloadTask resume];
 
 ```
-这里我在网上随便找了一张图片，然后还设置了manager的一个AFURLSessionDownloadTaskDidFinishDownloadingBlock，就是刚才说那些打酱油中的block中的一个。笔者在这里只是简单的打印了一下location，并没有返回一个路径，注意哦，这个block要返回一个路径的哦，这个路径是用来存放我们下载的图片的。
+这里我在网上随便找了一张图片，然后还设置了manager的一个AFURLSessionDownloadTaskDidFinishDownloadingBlock，就是刚才说那些打酱油中的block中的一个。在这里只是简单的打印了一下location，并没有返回一个路径，注意哦，这个block要返回一个路径的哦，这个路径是用来存放我们下载的图片的。
 
 这里通过manager实例方法来创建downloadTask:
 ```objc
@@ -229,7 +229,7 @@ if (destination) {
 ```
 block的用法有没有很神奇它竟然捕获从最外面传进来的destination，并且保存到现在，而且现在要执行它来返回图片要保存的URL。
 
-到这里基本也就快结束了，执行完，就会进入这个[AFURLSessionManagerTaskDelegate URLSession:task:didCompleteWithError:]函数里了，这一步和数据请求没有什么区别。经过这么多调用，图片也就下载完了。前面笔者设置manager的downloadTaskDidFinishDownloading属性，这个笔者认为可以用来返回指定的URL，也可以用来做一些，下载完成后的后续处理工作。
+到这里基本也就快结束了，执行完，就会进入这个[AFURLSessionManagerTaskDelegate URLSession:task:didCompleteWithError:]函数里了，这一步和数据请求没有什么区别。经过这么多调用，图片也就下载完了。前面设置manager的downloadTaskDidFinishDownloading属性，这个个人认为可以用来返回指定的URL，也可以用来做一些，下载完成后的后续处理工作。
 
 ---EOF---
 
