@@ -644,22 +644,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
     <span class="p">};</span>
     
     <span class="c1">//2.2创建runloop观察者
-</span>    <span class="cm">/*
-     CFRunLoopObserverRef CFRunLoopObserverCreate(CFAllocatorRef allocator,
-     CFOptionFlags activities,
-     Boolean repeats,
-     CFIndex order,
-     CFRunLoopObserverCallBack callout,
-     CFRunLoopObserverContext *context);
-     
-     @param allocator：这个参数用来分配空间给新的对象。默认情况下使用NULL或者kCFAllocatorDefault。
-     @param activities：设置Runloop的运行阶段的标志，当运行到此阶段时，CFRunLoopObserver会被调用
-     @param repeats：CFRunLoopObserver是否循环调用，false为单词调用，否则循环调用。
-     @param order：CFRunLoopObserver的优先级，当在Runloop同一运行阶段中有多个CFRunLoopObserver时，根据这个来先后调用CFRunLoopObserver。正常情况下使用0。
-     @param callout：回调函数
-     @param context：CFRunLoopObserver结构体里面的一个结构体，它主要用来给回调函数传递消息的。
-     @return CFRunLoopObserverRef：观察者指针对象
-     */</span>
+</span>
     <span class="n">CFRunLoopObserverRef</span> <span class="n">observer</span> <span class="o">=</span> <span class="n">CFRunLoopObserverCreate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span>
                                                             <span class="n">kCFRunLoopBeforeWaiting</span><span class="p">,</span>
                                                             <span class="nb">YES</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
@@ -670,18 +655,8 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 </span>    <span class="n">CFRunLoopAddObserver</span><span class="p">(</span><span class="n">runLoop</span><span class="p">,</span> <span class="n">observer</span><span class="p">,</span> <span class="n">kCFRunLoopCommonModes</span><span class="p">);</span>
     
 <span class="p">}</span>
-
-
-<span class="cm">/**
- 回调函数,在kCFRunLoopBeforeWaiting（runloop等待执行循环之前）情况下调用，因为定时器给的是0.1秒，所以这里调用非常频繁，保证一次循环执行一个任务
- 
- @param observer 观察者对象
- @param activity Runloop的运行阶段的标志
- @param info CFRunLoopObserverContext传入的参数
- */</span>
-<span class="kt">void</span> <span class="n">callBack</span><span class="p">(</span><span class="n">CFRunLoopObserverRef</span> <span class="n">observer</span><span class="p">,</span> <span class="n">CFRunLoopActivity</span> <span class="n">activity</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">info</span><span class="p">)</span>
+ <span class="kt">void</span> <span class="n">callBack</span><span class="p">(</span><span class="n">CFRunLoopObserverRef</span> <span class="n">observer</span><span class="p">,</span> <span class="n">CFRunLoopActivity</span> <span class="n">activity</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">info</span><span class="p">)</span>
 <span class="p">{</span>
-    
     <span class="c1">//1.拿到传过来的参数，再进行转换,因为这是C函数，不能直接调用self，所以在添加观察的时候把self传过来。
 </span>    <span class="n">ViewController</span> <span class="o">*</span><span class="n">vc</span> <span class="o">=</span> <span class="p">(</span><span class="n">__bridge</span> <span class="n">ViewController</span> <span class="o">*</span><span class="p">)(</span><span class="n">info</span><span class="p">);</span>
     
@@ -696,13 +671,9 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 </span>        <span class="n">self</span><span class="p">.</span><span class="n">label</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UILabel</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
         <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">label</span> <span class="nf">setText</span><span class="p">:</span><span class="s">@"这是一个标签"</span><span class="p">];</span>
     <span class="p">}</span>
-    <span class="c1">//默认情况下,子线程是不会常驻的
-</span>    <span class="c1">//只有子线程中runloop启动,并且runloop中有source或timer,才会常驻
-</span>    <span class="c1">//只有常驻线程才能再次执行任务,因为线程中有runloop来处理事件了
-</span>    <span class="n">NSRunLoop</span> <span class="o">*</span> <span class="n">rl</span> <span class="o">=</span>  <span class="p">[</span><span class="n">NSRunLoop</span> <span class="nf">currentRunLoop</span><span class="p">];</span>
+    <span class="n">NSRunLoop</span> <span class="o">*</span> <span class="n">rl</span> <span class="o">=</span>  <span class="p">[</span><span class="n">NSRunLoop</span> <span class="nf">currentRunLoop</span><span class="p">];</span>
     
-    <span class="c1">//向线程添加一个port，这样可以维持线程，使其成为常驻线程，当然也可以添加一个timer/source像下面这一行这样，个人觉得这样会浪费CPU的资源
-</span>    <span class="c1">//[NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(timerRun) userInfo:nil repeats:YES];
+    <span class="c1">//向线程添加一个port，这样可以维持线程，使其成为常驻线程
 </span>    <span class="p">[</span><span class="n">rl</span> <span class="nf">addPort</span><span class="p">:[</span><span class="n">NSMachPort</span> <span class="nf">port</span><span class="p">]</span> <span class="nf">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
 
     <span class="c1">//添加RunLoopObserver
@@ -711,8 +682,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
     <span class="c1">//启动runloop
 </span>    <span class="p">[</span><span class="n">rl</span> <span class="nf">run</span><span class="p">];</span>
     
-    <span class="c1">//如果线程成为了常驻线程,你会发现,不会执行到这行代码
-</span>    <span class="c1">//也就是说这个方法不会执行完,
+    <span class="c1">//如果线程成为了常驻线程，不会执行到这行代码
 </span>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"end"</span><span class="p">);</span>
 <span class="p">}</span>
 <span class="o">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">touchesBegan</span><span class="o">:</span><span class="p">(</span><span class="n">NSSet</span><span class="o">&lt;</span><span class="n">UITouch</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="p">)</span><span class="n">touches</span> <span class="n">withEvent</span><span class="o">:</span><span class="p">(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="n">event</span>

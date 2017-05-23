@@ -603,22 +603,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
     &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
     
     &lt;span class=&quot;c1&quot;&gt;//2.2创建runloop观察者
-&lt;/span&gt;    &lt;span class=&quot;cm&quot;&gt;/*
-     CFRunLoopObserverRef CFRunLoopObserverCreate(CFAllocatorRef allocator,
-     CFOptionFlags activities,
-     Boolean repeats,
-     CFIndex order,
-     CFRunLoopObserverCallBack callout,
-     CFRunLoopObserverContext *context);
-     
-     @param allocator：这个参数用来分配空间给新的对象。默认情况下使用NULL或者kCFAllocatorDefault。
-     @param activities：设置Runloop的运行阶段的标志，当运行到此阶段时，CFRunLoopObserver会被调用
-     @param repeats：CFRunLoopObserver是否循环调用，false为单词调用，否则循环调用。
-     @param order：CFRunLoopObserver的优先级，当在Runloop同一运行阶段中有多个CFRunLoopObserver时，根据这个来先后调用CFRunLoopObserver。正常情况下使用0。
-     @param callout：回调函数
-     @param context：CFRunLoopObserver结构体里面的一个结构体，它主要用来给回调函数传递消息的。
-     @return CFRunLoopObserverRef：观察者指针对象
-     */&lt;/span&gt;
+&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;CFRunLoopObserverRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CFRunLoopObserverCreate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
                                                             &lt;span class=&quot;n&quot;&gt;kCFRunLoopBeforeWaiting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
                                                             &lt;span class=&quot;nb&quot;&gt;YES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
@@ -629,18 +614,8 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;CFRunLoopAddObserver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;runLoop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kCFRunLoopCommonModes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
     
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-
-&lt;span class=&quot;cm&quot;&gt;/**
- 回调函数,在kCFRunLoopBeforeWaiting（runloop等待执行循环之前）情况下调用，因为定时器给的是0.1秒，所以这里调用非常频繁，保证一次循环执行一个任务
- 
- @param observer 观察者对象
- @param activity Runloop的运行阶段的标志
- @param info CFRunLoopObserverContext传入的参数
- */&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;callBack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CFRunLoopObserverRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CFRunLoopActivity&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;callBack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CFRunLoopObserverRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CFRunLoopActivity&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    
     &lt;span class=&quot;c1&quot;&gt;//1.拿到传过来的参数，再进行转换,因为这是C函数，不能直接调用self，所以在添加观察的时候把self传过来。
 &lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;ViewController&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__bridge&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ViewController&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
     
@@ -655,13 +630,9 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
 &lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;label&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UILabel&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
         &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;label&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;setText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;这是一个标签&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;//默认情况下,子线程是不会常驻的
-&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;//只有子线程中runloop启动,并且runloop中有source或timer,才会常驻
-&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;//只有常驻线程才能再次执行任务,因为线程中有runloop来处理事件了
-&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;NSRunLoop&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSRunLoop&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;currentRunLoop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;NSRunLoop&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSRunLoop&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;currentRunLoop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
     
-    &lt;span class=&quot;c1&quot;&gt;//向线程添加一个port，这样可以维持线程，使其成为常驻线程，当然也可以添加一个timer/source像下面这一行这样，个人觉得这样会浪费CPU的资源
-&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;//[NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(timerRun) userInfo:nil repeats:YES];
+    &lt;span class=&quot;c1&quot;&gt;//向线程添加一个port，这样可以维持线程，使其成为常驻线程
 &lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rl&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSMachPort&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;forMode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSDefaultRunLoopMode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
 
     &lt;span class=&quot;c1&quot;&gt;//添加RunLoopObserver
@@ -670,8 +641,7 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
     &lt;span class=&quot;c1&quot;&gt;//启动runloop
 &lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rl&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
     
-    &lt;span class=&quot;c1&quot;&gt;//如果线程成为了常驻线程,你会发现,不会执行到这行代码
-&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;//也就是说这个方法不会执行完,
+    &lt;span class=&quot;c1&quot;&gt;//如果线程成为了常驻线程，不会执行到这行代码
 &lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;end&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;touchesBegan&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSSet&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UITouch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;touches&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;withEvent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UIEvent&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event&lt;/span&gt;
