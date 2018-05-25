@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705231833" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201805251525" type="text/css">
 
     <!-- Fonts -->
     
@@ -124,6 +124,8 @@
 
     
 
+    
+
 
     
 
@@ -131,6 +133,8 @@
 
     
         <a href="/contact/">Contact Me</a>
+    
+
     
 
     
@@ -198,7 +202,7 @@
 <h2 id="正文">正文</h2>
 
 <p>以前用计时器的时候，只顾着用了，也没想太多，在后来的学习当中，发现计时器也会持有目标对象从而产生保留环，而且对重复执行的计时器，这种后果不仅是漏了内存还可能有更加严重。以下面的代码为例：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//Customer.h
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//Customer.h
 </span><span class="cp">#import &lt;Foundation/Foundation.h&gt;
 </span>
 <span class="k">@interface</span> <span class="nc">Customer</span> <span class="p">:</span> <span class="nc">NSObject</span>
@@ -239,11 +243,10 @@
     <span class="n">Customer</span> <span class="o">*</span><span class="n">cus</span> <span class="o">=</span> <span class="p">[[</span><span class="n">Customer</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
     <span class="p">[</span><span class="n">cus</span> <span class="nf">start</span><span class="p">];</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>如果一切正常情况，当出了作用域之后cus，cus便会被释放，计时器也会失效。但是因为计时器持有了self，而计时器作为属性又被self持有了，这样就出现了保留环，所以就算出了作用域cus其实也没有被释放即dealloc方法没有执行，计时器也没有失效，依然做着事，这样很可能会出现严重后果，这取决于所做的事。这里除非手动调用stop方法使计时器失效。那有没有更好的办法呢？答案是肯定的，那就是通过块来解决。可以为NSTimer增加一个分类：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//NSTimer+blockSupport.h
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//NSTimer+blockSupport.h
 </span><span class="cp">#import &lt;Foundation/Foundation.h&gt;
 </span>
 <span class="k">@interface</span> <span class="nc">NSTimer</span> <span class="p">(</span><span class="nl">blockSupport</span><span class="p">)</span>
@@ -271,18 +274,16 @@
     <span class="p">}</span>
 <span class="p">}</span>
 <span class="k">@end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>通过上面这个类方法创建的计时器，利用了userInfo参数将计时器要执行的任务封装成了块，该参数可以存放一个不透明值即万能值，只要计时器有效，该参数就会一直被保留。仅依靠这个分类还不行，还要对start方法修改如下：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">start</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">start</span>
 <span class="p">{</span>
     <span class="n">__weak</span> <span class="n">MyTimer</span> <span class="o">*</span><span class="n">timer</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
     <span class="n">self</span><span class="p">.</span><span class="n">timer</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSTimer</span> <span class="nf">block_scheduledTimerWithTimerInterval</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span> <span class="nf">block</span><span class="p">:</span><span class="o">^</span><span class="p">{</span>
         <span class="p">[</span><span class="n">timer</span> <span class="nf">dosomething</span><span class="p">];</span>
     <span class="p">}</span> <span class="n">repeats</span><span class="o">:</span><span class="nb">YES</span><span class="p">];</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>这样把计时器所做的事封装进了block，只要目标对象存在计时器就一直有效，而计时器捕获的只是self的一个弱引用，不会造成保留环。一旦目标对象被释放了，计时器立刻失效。以上内容参考了《Effectvie Objective-c》</p>
 
 <p>–EOF–</p>

@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705231833" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201805251525" type="text/css">
 
     <!-- Fonts -->
     
@@ -124,6 +124,8 @@
 
     
 
+    
+
 
     
 
@@ -131,6 +133,8 @@
 
     
         <a href="/contact/">Contact Me</a>
+    
+
     
 
     
@@ -182,7 +186,7 @@
 
 <h2 id="前言">前言</h2>
 
-<p>__attribute__其实是一个编译器指令，用于指定一些声明中特性包括函数声明和变量声明，这样一来可以编译器可以执行一些错误检查或是进行一些高级的优化。说的直白一点就是对声明加一点限制，拿函数而言，可以用__attribute__来限制形参不为空，这样一来，可以保证在编程的过程，函数调用形参一定是不为空的。这只是其中一个用法。这个指令对于编写框架以及更新框架用的多，在实际的编程中用的不多，下面列出的都是一些用法。</p>
+<p>最近在看开源的框架的时候，经常能看到用__attribute__定义的各种宏。__attribute__是一个编译器指令，用于指定一些声明中特性包括函数声明和变量声明，这样一来可以编译器可以执行一些错误检查或是进行一些高级的优化。说的直白一点就是对声明加一点限制，拿函数而言，可以用__attribute__来限制形参不为空，这样一来，可以保证在编程的过程，函数调用形参一定是不为空的。这只是其中一个用法。这个指令对于编写框架以及更新框架用的多，在实际的编程中用的不多，下面列出的都是一些用法。</p>
 
 <h2 id="正文">正文</h2>
 
@@ -193,7 +197,7 @@
 <p>__attribute__后面是由两组圆括号，括号内的属性由逗号分割，该指令放在函数，变量和类型声明之后。</p>
 
 <p>1.<font color="#FF6100">__attribute__((cleanup(...)))</font>，用于修饰一个变量，在它的作用域结束时可以自动执行一个指定的方法，如：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">// 指定一个cleanup方法，注意入参是所修饰变量的地址，类型要一样
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 指定一个cleanup方法，注意入参是所修饰变量的地址，类型要一样
 // 对于指向objc对象的指针(id *)，如果不强制声明__strong默认是__autoreleasing，造成类型不匹配
 </span><span class="k">static</span> <span class="kt">void</span> <span class="n">stringCleanUp</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">__strong</span> <span class="o">*</span><span class="n">string</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span> <span class="o">*</span><span class="n">string</span><span class="p">);</span>
@@ -202,58 +206,51 @@
 </span><span class="p">{</span>
      <span class="n">NSString</span> <span class="o">*</span><span class="n">__strong</span> <span class="n">string</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">cleanup</span><span class="p">(</span><span class="n">stringCleanUp</span><span class="p">)))</span> <span class="o">=</span> <span class="s">@"hello"</span><span class="p">;</span>
 <span class="p">}</span> <span class="c1">// 当运行到这个作用域结束时，自动调用stringCleanUp
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 <p>所谓作用域结束，包括大括号结束、return、goto、break、exception等各种情况。
 当然，可以修饰的变量不止NSString，自定义Class或基本类型都是可以的。</p>
 
 <p>这个指令可以修饰变量，当然也就可以修饰block：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">// void(^block)(void)的指针是void(^*block)(void)
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// void(^block)(void)的指针是void(^*block)(void)
 </span><span class="k">static</span> <span class="kt">void</span> <span class="nf">blockCleanUp</span><span class="p">(</span><span class="n">__strong</span> <span class="kt">void</span><span class="p">(</span><span class="o">^*</span><span class="n">block</span><span class="p">)(</span><span class="kt">void</span><span class="p">))</span> <span class="p">{</span>
     <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)();</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>然后我们在一个作用域里来定义一个block变量：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="p">{</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
    <span class="c1">// 加了个`unused`的attribute用来消除`unused variable`的warning
 </span>    <span class="n">__strong</span> <span class="kt">void</span><span class="p">(</span><span class="o">^</span><span class="n">block</span><span class="p">)(</span><span class="kt">void</span><span class="p">)</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">cleanup</span><span class="p">(</span><span class="n">blockCleanUp</span><span class="p">),</span> <span class="n">unused</span><span class="p">))</span> <span class="o">=</span> <span class="o">^</span><span class="p">{</span>
         <span class="n">NSLog</span><span class="p">(</span><span class="s">@"I'm dying..."</span><span class="p">);</span>
     <span class="p">};</span>
 <span class="p">}</span> <span class="c1">//执行完这一行后就会输出"I'm dying..."
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <p>2.<font color="#FF6100">__attribute__((noreturn))</font>，它用于指定函数是不允许有返回值的。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">noReturn</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">noreturn</span><span class="p">))</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">noReturn</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">noreturn</span><span class="p">))</span>
 <span class="p">{</span>
     <span class="n">NSLog</span><span class="p">(</span><span class="s">@"hello"</span><span class="p">);</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>3.<font color="#FF6100">__attribute__((deprecated))</font>,这个可能是大家见的最多了，苹果也经常干这个事，每隔一两个版本可能就会有那么几个API被废弃，然后提示我们用哪个API代替，在编译的时候就会发出警告。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">deprecatedMethodWithMessage</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">deprecated</span><span class="p">(</span><span class="s">"this method was deprecated in MyApp.app version 5.0.2, use newMethod instead"</span><span class="p">)))</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">deprecatedMethodWithMessage</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">deprecated</span><span class="p">(</span><span class="s">"this method was deprecated in MyApp.app version 5.0.2, use newMethod instead"</span><span class="p">)))</span>
 <span class="p">{</span>
     <span class="n">NSLog</span><span class="p">(</span><span class="s">@"his method was deprecated in MyApp.app version 5.0.2, use newMethod instead"</span><span class="p">);</span>
 <span class="p">}</span><span class="c1">//调用这个方法的时候会发出警告信息，deprecated后面的参数可要可不要。
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <p>4.<font color="#FF6100">__attribute__((warn_unused_result))</font></p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nf">printMsg</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">str</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">warn_unused_result</span><span class="p">))</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nf">printMsg</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">str</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">warn_unused_result</span><span class="p">))</span>
 <span class="p">{</span>
     <span class="k">return</span> <span class="n">str</span><span class="p">;</span>
 <span class="p">}</span>
 <span class="c1">//这样调用这个函数会报警告信息,提示用户返回值没有被使用，在一些返回值很重要的函数里，这个很有用
 </span><span class="p">[</span><span class="n">self</span> <span class="nf">printMsg</span><span class="p">:</span><span class="s">@"msg"</span><span class="p">];</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>5.<font color="#FF6100">__attribute__((unavailable))</font>，这个和deprecated有很大的不一样，如果对函数加上这个，那么这个函数是禁止使用的。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">instancetype</span><span class="p">)</span><span class="n">init</span> <span class="n">__attribute__</span> <span class="p">((</span><span class="n">unavailable</span><span class="p">(</span><span class="s">"这个函数不能用！"</span><span class="p">)));</span>
-</code></pre>
-</div>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">instancetype</span><span class="p">)</span><span class="n">init</span> <span class="n">__attribute__</span> <span class="p">((</span><span class="n">unavailable</span><span class="p">(</span><span class="s">"这个函数不能用！"</span><span class="p">)));</span>
+</code></pre></div></div>
 <p>如果强行使用这个函数，编译是通不过的。这一种做法可禁止使用默认的初始化方法生成类的实例对象，只能使用用户提供的初始化方法。</p>
 
 <p>6.<font color="#FF6100">__attribute__((overloadable))</font>，这个可以用来实现函数的重载。这里先来说一下两个概念：重载和覆盖。</p>
@@ -267,7 +264,7 @@
 </ol>
 
 <p>知道这个两个概念的区别，那么来讲讲objective-c，在这门语言中，是没有重载这个机制的，但是可以覆盖。使用overloadable后可以实现重载，但是不能像c++那样重载实例方法，只能重载c/c++的函数：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//调用以下函数时和c/c++调用的语法一样
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//调用以下函数时和c/c++调用的语法一样
 </span><span class="kt">void</span> <span class="nf">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">num</span><span class="p">)</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">overloadable</span><span class="p">))</span>
 <span class="p">{</span>
     <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Add Int %i"</span><span class="p">,</span><span class="n">num</span><span class="p">);</span>
@@ -280,18 +277,16 @@
 <span class="p">{</span>
     <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Add NSNumber %@"</span><span class="p">,</span><span class="n">num</span><span class="p">);</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>7.<font color="#FF6100">__attribute__((objc_subclassing_restricted))</font>，在类的声明文件中加入这一行，表示这个类，不能被继承，就是java类中的final类。如果试图去继承这个类，编译会报错：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//customClass.h
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//customClass.h
 </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">objc_subclassing_restricted</span><span class="p">))</span>
 <span class="k">@interface</span> <span class="nc">customClass</span> <span class="p">:</span> <span class="nc">NSObject</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>8.<font color="#FF6100">__attribute__((objc_designated_initializer))</font>,这个用于类的初始化方法。对于对象而言，在生成一个实例的时候，如果需要提供必要的信息来完成初始化，才能使该对象正确的完成后面的工作，这种初始化方法叫”全能初始化方法”(designated initializer)。如果创建一个类的方法有多种，相应的，这个类便会有多个初始化方法。如果这些初始化分别初始化类中不同的属性时，那么在实际使用的过程中，当一使用同一个对象，做同一件事的时候，创建对象使用的是不同的初始化方法，那么问题会视后面具体的事出现不同的问题，有些可能不会造成很大的影响，有些可能会造成重大灾难。在《Effectvie objective-c 2.0》，条款16当中有详细的说明。具体的做法是指定一个全能初始化方法，让其他初始化方法去调用这个全能初始化方法。使用objc_designated_initializer还要注意，当存在继承的时候，子类在初始化时要调用父类的全能初始化方法，完成初始化，否则编译器会给出警告信息。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//Rectangle.h
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//Rectangle.h
 </span><span class="k">@interface</span> <span class="nc">Rectangle</span> <span class="p">:</span> <span class="nc">NSObject</span>
 <span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">assign</span><span class="p">,</span> <span class="n">readonly</span><span class="p">)</span> <span class="kt">float</span> <span class="n">width</span><span class="p">;</span>
 <span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">assign</span><span class="p">,</span> <span class="n">readonly</span><span class="p">)</span> <span class="kt">float</span> <span class="n">heigth</span><span class="p">;</span>
@@ -313,11 +308,10 @@
     <span class="k">return</span> <span class="p">[</span><span class="n">self</span> <span class="nf">initWithWidth</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span> <span class="nf">heigth</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
 <span class="p">}</span>
 <span class="k">@end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>9.<font color="#FF6100">__attribute__((objc_requires_super))</font>，这个指令表示在子类重写方法时，必须在调用父类中的方法，不然后会给出警告。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//Base.h
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//Base.h
 </span><span class="k">@interface</span> <span class="nc">Base</span> <span class="p">:</span> <span class="nc">NSObject</span>
 <span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">method1</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">objc_requires_super</span><span class="p">));</span>
 <span class="k">@end</span>
@@ -340,11 +334,10 @@
     <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Derived"</span><span class="p">);</span>
 <span class="p">}</span>
 <span class="k">@end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>10.<font color="#FF6100">__attribute__((nonnull))</font>，这个表示函数参数不为空，由编译器检查。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">testNonnull</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">avg1</span> <span class="nf">avg2</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">avg2</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">nonnull</span><span class="p">))</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">testNonnull</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">avg1</span> <span class="nf">avg2</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">avg2</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">nonnull</span><span class="p">))</span>
 <span class="p">{</span>
     <span class="c1">//do something
 </span><span class="p">}</span>
@@ -352,8 +345,7 @@
 </span><span class="p">{</span>
     <span class="p">[</span><span class="n">self</span> <span class="nf">testNonnull</span><span class="p">:</span><span class="nb">nil</span> <span class="nf">avg2</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span><span class="c1">//这样使用时编译器会给出警告
 </span><span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><a href="http://www.jianshu.com/p/29eb7b5c8b2d"><strong>attribute</strong> 总结</a></p>
 

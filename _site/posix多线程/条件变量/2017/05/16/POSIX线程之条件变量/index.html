@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705231833" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201805251525" type="text/css">
 
     <!-- Fonts -->
     
@@ -124,6 +124,8 @@
 
     
 
+    
+
 
     
 
@@ -131,6 +133,8 @@
 
     
         <a href="/contact/">Contact Me</a>
+    
+
     
 
     
@@ -212,7 +216,7 @@
 <p>条件变量是线程的另一种同步机制，与互斥一起使用时，允许线程以无竞争的等待方式等待特定的条件发生。它由互斥量保护，在线程改变条件之前必须首先锁住互斥量。</p>
 
 <p>回到前面提到的问题。前面说了，解法用到了互斥量和条件变量，来看看怎么用的：</p>
-<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
 #include &lt;pthread.h&gt;
 </span>
 <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
@@ -298,8 +302,7 @@
     <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_join</span><span class="p">(</span><span class="n">tid3</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ret</span><span class="p">);</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>这里先来解释几个关于条件变量的函数：</p>
 <ul>

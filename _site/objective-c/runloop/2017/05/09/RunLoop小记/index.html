@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705231833" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201805251525" type="text/css">
 
     <!-- Fonts -->
     
@@ -124,6 +124,8 @@
 
     
 
+    
+
 
     
 
@@ -131,6 +133,8 @@
 
     
         <a href="/contact/">Contact Me</a>
+    
+
     
 
     
@@ -187,14 +191,13 @@
 <h2 id="正文">正文</h2>
 
 <p>RunLoop是什么？在windows下用MFC做过开发的人对于基于消息循环的事件处理机制应该不会陌生，RunLoop和其差不多。从名字上看，它是一个loop而且是一个带条件的，同时又是一个”死循环”，但是它又很特殊，在没有事干的时候，这个循环处于闲等待的状态。写一个死循环容易：</p>
-<div class="language-c highlighter-rouge"><pre class="highlight"><code><span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">{</span>
 
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>如果RunLoop是这样做的话，那么也就没什么值研究的了。所以说它是一种带条件的循环，那么又是什么条件呢？那就是消息或者事件，RunLoop是一个基于消息的循环。当没有消息的时候，它就会进入休眠，内核会将其挂起也就是：我睡觉了，没事别叫我。当有消息来的时候就加入到这个循环里时，内核就会将其唤醒，然后对消息进行处理，也就是：睡你XX，起来嗨。形象一点就是：</p>
-<div class="language-c highlighter-rouge"><pre class="highlight"><code><span class="err">程序员</span> <span class="o">=</span> <span class="err">死了没</span><span class="p">();</span>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">程序员</span> <span class="o">=</span> <span class="err">死了没</span><span class="p">();</span>
 <span class="k">while</span><span class="p">(</span><span class="err">程序员</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="err">有事干了</span> <span class="o">=</span> <span class="err">我睡觉了没事别叫我</span><span class="p">();</span>
@@ -206,8 +209,7 @@
         <span class="err">@</span><span class="n">throw</span><span class="p">(</span><span class="err">你没妹子</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>RunLoop是和线程配合使用的，一般来说一个线程执行用来执行一个任务，执行完之后就会退出。当我们启动应用程序的时候，默认启动了一个主线程，所有的UI界面都是运行在主线程里的。但是启动后应用程序并不会马上就退出，而是一直运行在那里，等待用户的输入。正常情况下，应该是启动完成后，就会退出。正是RunLoop，才使得应用程序一直运行着。线程刚创建的时候并没有RunLoop（主线程除外），如果不去主动获取。RunLoop的创建发生在第一次获取时，销毁发生在线程结束时。用户只能在一个线程内部获取其RunLoop（主线程除外）。</p>
 
@@ -242,7 +244,7 @@
 </ul>
 
 <p>observe是用来监听RunLoop的状态的，RunLoop有以下几种状态：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="cm">/* Run Loop Observer Activities */</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Run Loop Observer Activities */</span>
 <span class="k">typedef</span> <span class="nf">CF_OPTIONS</span><span class="p">(</span><span class="n">CFOptionFlags</span><span class="p">,</span> <span class="n">CFRunLoopActivity</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">kCFRunLoopEntry</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1UL</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">),</span> <span class="c1">//InputSource/Timer已经加入到RunLoop了
 </span>    <span class="n">kCFRunLoopBeforeTimers</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1UL</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">),</span> <span class="c1">//Timer即将要被执行了
@@ -252,8 +254,7 @@
 </span>    <span class="n">kCFRunLoopExit</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1UL</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">),</span> <span class="c1">//RunLoop停止运转了
 </span>    <span class="n">kCFRunLoopAllActivities</span> <span class="o">=</span> <span class="mh">0x0FFFFFFFU</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>可以看到前四个描述了一个RunLoop的循环周期。</p>
 <h3 id="runloop和nsautoreleasepool的关系">RunLoop和NSAutoreleasePool的关系</h3>
 
@@ -263,7 +264,7 @@
 </blockquote>
 
 <p>意思是说，应用程序在主线程每个事件循环周期的开始中创建一个自动释放池，在这个循环周期结束的时候，把自动释放池排干，即把注册到自动释放池里的对象全部释放掉。之前一直不太明白，自动释放池是怎么释放对象的，现在可以来试验一下了：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//ViewController.m
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//ViewController.m
 </span><span class="k">@interface</span> <span class="nc">ViewController</span> <span class="p">()</span>
 <span class="c1">//注意label的内存管理语义，用weak也可以，不过weak在赋完值后，输出不了正确结果后面会解释
 </span><span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">assign</span><span class="p">)</span> <span class="n">UILabel</span> <span class="o">*</span><span class="n">label</span><span class="p">;</span>
@@ -349,19 +350,17 @@
     <span class="c1">//下面这行是停止当前线程的RunLoop，这个方法是在我们创建的子线程中不是主线程，加上这一行，再跑一次看看会有什么结果
 //    CFRunLoopStop(CFRunLoopGetCurrent());
 </span><span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>这把段代码跑一次，输出的结果为：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="mi">2017</span><span class="o">-</span><span class="mo">05</span><span class="o">-</span><span class="mi">09</span> <span class="mi">11</span><span class="o">:</span><span class="mi">37</span><span class="o">:</span><span class="mi">51</span><span class="p">.</span><span class="mi">134</span> <span class="n">copy</span><span class="p">[</span><span class="mi">92859</span><span class="o">:</span><span class="mi">12314616</span><span class="p">]</span> <span class="err">跑起来</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">2017</span><span class="o">-</span><span class="mo">05</span><span class="o">-</span><span class="mi">09</span> <span class="mi">11</span><span class="o">:</span><span class="mi">37</span><span class="o">:</span><span class="mi">51</span><span class="p">.</span><span class="mi">134</span> <span class="n">copy</span><span class="p">[</span><span class="mi">92859</span><span class="o">:</span><span class="mi">12314616</span><span class="p">]</span> <span class="err">跑起来</span>
 <span class="mi">2017</span><span class="o">-</span><span class="mo">05</span><span class="o">-</span><span class="mi">09</span> <span class="mi">11</span><span class="o">:</span><span class="mi">37</span><span class="o">:</span><span class="mi">51</span><span class="p">.</span><span class="mi">159</span> <span class="n">copy</span><span class="p">[</span><span class="mi">92859</span><span class="o">:</span><span class="mi">12314616</span><span class="p">]</span> <span class="err">这是一个标签</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>当点击屏幕的时候，会在我们创建的线程内执行一次方法<code class="highlighter-rouge">againRun</code>，执行完后，RunLoop就进入了休眠，这时是第二个循环周期，label已经被释放了，所以程序就会因为访问已释放的内存而崩掉。还有一点label的内存管理语义这里设定的为assgin，设置weak的时候也可以但是输也不了正确的结果，通过断点调试的时候确实可以看到当label的内存管理语义为weak的时候，它是有值的，这条语句执行完后<code class="highlighter-rouge">self.label = [[UILabel alloc] init];</code>，label并没有马上释放掉，因为自动释放池延迟了它的释放，正常情况下，赋值完就会立该释放，但这里得不到正确的结果，猜想肯定编译器做了手脚。大家可以将label的内存管理语义改为weak，再跑一次看看。</p>
 
 <h3 id="runloop对timer的影响">RunLoop对timer的影响</h3>
 
 <p>先来看一个例子：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//ViewController.m
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//ViewController.m
 </span><span class="cp">#import "ViewController.h"
 </span>
 <span class="k">@interface</span> <span class="nc">ViewController</span> <span class="p">()</span>
@@ -402,17 +401,15 @@
 <span class="p">}</span>
 
 <span class="k">@end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>当程序跑起来什么也不干就会每隔一秒，控制台输入一个timer go，但是如果我们不停的滑动scrollView，控制台就停止输出了。因为这个timer运行在NSDefaultRunLoopMode下，只有当RunLoop在这个mode下才会执行timer，当程序运行的时候，我们没做任何事，Runloop就处在这个mode下，等待用户的输入。但是当我们滑动scrollView时，RunLoop由NSDefaultRunLoopMode转到了UITrackingRunLoopMode下，就不会执行timer了。在点击按钮，滑动scrollView,点击屏幕和移动屏幕中可以看到mode的变化。</p>
 
 <h2 id="总结">总结</h2>
 
 <p>最后以一个RunLoop的应用场景结束本文。在有UITableView的控制器里，滑动UITableView加载图片时，主线程会把图片设置到cell上，如果这时你同时又滑动tableView，会因为主线程同时设置图片和滑动而造成到卡顿的现象。知道了RunLoop后，在滑动的时候，让子线程去处理网络请求，当停止滑动的时候，这时RunLoop进入到了NSDefaultRunLoopMode下，这时让主线程去设置图片。这样实现的话，代码只有一句：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="n">UIImage</span> <span class="o">*</span><span class="n">downloadImage</span> <span class="o">=</span> <span class="p">.....</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">UIImage</span> <span class="o">*</span><span class="n">downloadImage</span> <span class="o">=</span> <span class="p">.....</span>
 <span class="p">[</span><span class="n">self</span> <span class="nf">performSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">setImage</span><span class="p">:)</span> <span class="n">withObject</span><span class="o">:</span><span class="n">downloadImage</span> <span class="n">afterDelay</span><span class="o">:</span><span class="mi">0</span> <span class="n">inModes</span><span class="o">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>–EOF–
 <!-- 下次研究CFRunLoop中的CFRunLoopTimer和CFRunLoopSource --></p>

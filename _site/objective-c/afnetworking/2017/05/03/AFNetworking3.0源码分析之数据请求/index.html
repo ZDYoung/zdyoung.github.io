@@ -27,7 +27,7 @@
     <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/pixyll.css?201705231833" type="text/css">
+    <link rel="stylesheet" href="/css/pixyll.css?201805251525" type="text/css">
 
     <!-- Fonts -->
     
@@ -124,6 +124,8 @@
 
     
 
+    
+
 
     
 
@@ -131,6 +133,8 @@
 
     
         <a href="/contact/">Contact Me</a>
+    
+
     
 
     
@@ -195,7 +199,7 @@
 <p>那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，我还没有通过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的<code class="highlighter-rouge">resume</code>和<code class="highlighter-rouge">suspend</code>进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。</p>
 
 <p>接下来，以官方给出的例子跟踪一下，它的调用过程以下是源码：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="n">configuration</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLSessionConfiguration</span> <span class="nf">defaultSessionConfiguration</span><span class="p">];</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="n">configuration</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURLSessionConfiguration</span> <span class="nf">defaultSessionConfiguration</span><span class="p">];</span>
 <span class="n">AFURLSessionManager</span> <span class="o">*</span><span class="n">manager</span> <span class="o">=</span> <span class="p">[[</span><span class="n">AFURLSessionManager</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithSessionConfiguration</span><span class="p">:</span><span class="n">configuration</span><span class="p">];</span>
 
 <span class="n">manager</span><span class="p">.</span><span class="n">responseSerializer</span> <span class="o">=</span> <span class="p">[</span><span class="n">AFHTTPResponseSerializer</span> <span class="nf">serializer</span><span class="p">];</span>
@@ -213,10 +217,9 @@
     <span class="p">}</span>
 <span class="p">}];</span>
 <span class="p">[</span><span class="n">dataTask</span> <span class="nf">resume</span><span class="p">];</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>该代码核心只有两句一个是manager的初始化还有一个就是dataTask的创建。先来看看初始化：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">instancetype</span><span class="p">)</span><span class="nf">initWithSessionConfiguration</span><span class="p">:(</span><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="p">)</span><span class="nv">configuration</span> <span class="p">{</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">instancetype</span><span class="p">)</span><span class="nf">initWithSessionConfiguration</span><span class="p">:(</span><span class="n">NSURLSessionConfiguration</span> <span class="o">*</span><span class="p">)</span><span class="nv">configuration</span> <span class="p">{</span>
     <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">self</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
@@ -265,12 +268,11 @@
 
     <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>看起来好多，对我们本次的目的其实需要关心的东西很少，我都给出来了注释。</p>
 
 <p>第二处是dataTask的创建，为了说明，先把程序跑起来看看函数的调用栈。任务一启动，首先进入到了[AFURLSessionManager dataTaskWithRequest:completionHandler:]函数中：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nf">dataTaskWithRequest</span><span class="p">:(</span><span class="n">NSURLRequest</span> <span class="o">*</span><span class="p">)</span><span class="nv">request</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nf">dataTaskWithRequest</span><span class="p">:(</span><span class="n">NSURLRequest</span> <span class="o">*</span><span class="p">)</span><span class="nv">request</span>
                             <span class="nf">completionHandler</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLResponse</span> <span class="o">*</span><span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">))</span><span class="nv">completionHandler</span>
 <span class="p">{</span>
     <span class="n">__block</span> <span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="n">dataTask</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
@@ -282,10 +284,9 @@
 
     <span class="k">return</span> <span class="n">dataTask</span><span class="p">;</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>函数体内主要是在一个GCD队列里创建dataTask，此处用到的是GCD同步API。然后调用了第一个私有方法[AFURLSessionManager addDelegateForDataTask:completionHandler:]来设置dataTask的代理和回调的block:</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">addDelegateForDataTask</span><span class="p">:(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">addDelegateForDataTask</span><span class="p">:(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
              <span class="nf">completionHandler</span><span class="p">:(</span><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="p">)(</span><span class="n">NSURLResponse</span> <span class="o">*</span><span class="n">response</span><span class="p">,</span> <span class="n">id</span> <span class="n">responseObject</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">))</span><span class="nv">completionHandler</span>
 <span class="p">{</span>
     <span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="n">delegate</span> <span class="o">=</span> <span class="p">[[</span><span class="n">AFURLSessionManagerTaskDelegate</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
@@ -296,10 +297,9 @@
     
     <span class="p">[</span><span class="n">self</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">delegate</span> <span class="nf">forTask</span><span class="p">:</span><span class="n">dataTask</span><span class="p">];</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>在这个函数内真正的设置了网络的代理，就是刚才提到的AFURLSessionManagerTaskDelegate类，这里有一个小细节需要注意一下，就是这一行<code class="highlighter-rouge">delegate.manager = self</code>，在该函数内定义了一个delegate并且持有了manager,而在AFURLSessionManagerTaskDelegate定义中声明了一个AFURLSessionManager对象manager。这就是说delegate持有了manager，manager持有了delegate，循环引用的问题就出来了，这里的解决方法是通过将AFURLSessionManagerTaskDelegate中的manager属性的内存管理语义声明为weak。我们看一下，该类的声明就知道了。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AFURLSessionManagerTaskDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span> <span class="o">&lt;</span><span class="n">NSURLSessionTaskDelegate</span><span class="p">,</span> <span class="n">NSURLSessionDataDelegate</span><span class="p">,</span> <span class="n">NSURLSessionDownloadDelegate</span><span class="o">&gt;</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AFURLSessionManagerTaskDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span> <span class="o">&lt;</span><span class="n">NSURLSessionTaskDelegate</span><span class="p">,</span> <span class="n">NSURLSessionDataDelegate</span><span class="p">,</span> <span class="n">NSURLSessionDownloadDelegate</span><span class="o">&gt;</span>
 <span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">weak</span><span class="p">)</span> <span class="n">AFURLSessionManager</span> <span class="o">*</span><span class="n">manager</span><span class="p">;</span><span class="c1">//内存管理语义为weak
 </span><span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSMutableData</span> <span class="o">*</span><span class="n">mutableData</span><span class="p">;</span>
 <span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSProgress</span> <span class="o">*</span><span class="n">progress</span><span class="p">;</span>
@@ -307,11 +307,10 @@
 <span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">copy</span><span class="p">)</span> <span class="n">AFURLSessionDownloadTaskDidFinishDownloadingBlock</span> <span class="n">downloadTaskDidFinishDownloading</span><span class="p">;</span>
 <span class="k">@property</span> <span class="p">(</span><span class="n">nonatomic</span><span class="p">,</span> <span class="n">copy</span><span class="p">)</span> <span class="n">AFURLSessionTaskCompletionHandler</span> <span class="n">completionHandler</span><span class="p">;</span>
 <span class="k">@end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>接着上面的说，接下来函数的调用栈就进入了[AFURLSessionManager setDelegate:dataTask:]。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setDelegate</span><span class="p">:(</span><span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="p">)</span><span class="nv">delegate</span>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setDelegate</span><span class="p">:(</span><span class="n">AFURLSessionManagerTaskDelegate</span> <span class="o">*</span><span class="p">)</span><span class="nv">delegate</span>
             <span class="nf">forTask</span><span class="p">:(</span><span class="n">NSURLSessionTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">task</span>
 <span class="p">{</span>
     <span class="n">NSParameterAssert</span><span class="p">(</span><span class="n">task</span><span class="p">);</span>
@@ -321,15 +320,14 @@
     <span class="n">self</span><span class="p">.</span><span class="n">mutableTaskDelegatesKeyedByTaskIdentifier</span><span class="p">[</span><span class="err">@</span><span class="p">(</span><span class="n">task</span><span class="p">.</span><span class="n">taskIdentifier</span><span class="p">)]</span> <span class="o">=</span> <span class="n">delegate</span><span class="p">;</span>
     <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">lock</span> <span class="nf">unlock</span><span class="p">];</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>这个函数是用来干吗的呢？还加了锁。从代码上看，就是保存task的代理。</p>
 
 <p>至此，所有的准备工作都做完了只等我们去启动这个任务了。没错，就是通过这一句<code class="highlighter-rouge">[dataTask resume]</code>。写到这，先来总结一下，这些准备工作的函数调用过程，直接甩图了：
 <img src="/images/调用过程.png" alt="调用过程" /></p>
 
 <p>接下来就是代理了，代理的过程是这样的，AFURLSessionManager自己实现了代理协议，但是在代理协议方法中，根据dataTask的taskIdentifier找到相应的delegate对象，把具体代理该做的事，交给这个delegate。任务启动后第一个调用的是AFURLSessionManager这个函数：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManager类的方法
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManager类的方法
 </span><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">URLSession</span><span class="p">:(</span><span class="n">NSURLSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
           <span class="nf">dataTask</span><span class="p">:(</span><span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
     <span class="nf">didReceiveData</span><span class="p">:(</span><span class="n">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">data</span>
@@ -341,20 +339,18 @@
         <span class="n">self</span><span class="p">.</span><span class="n">dataTaskDidReceiveData</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">dataTask</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span>
     <span class="p">}</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>可以看出它把delegate取出来之后就转到AFURLSessionManagerTaskDelegate类中去了，调用了AFURLSessionManagerTaskDelegate同名方法。</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManagerTaskDelegate类的方法
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManagerTaskDelegate类的方法
 </span><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">URLSession</span><span class="p">:(</span><span class="n">__unused</span> <span class="n">NSURLSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
           <span class="nf">dataTask</span><span class="p">:(</span><span class="n">__unused</span> <span class="n">NSURLSessionDataTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataTask</span>
     <span class="nf">didReceiveData</span><span class="p">:(</span><span class="n">NSData</span> <span class="o">*</span><span class="p">)</span><span class="nv">data</span>
 <span class="p">{</span>
     <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">mutableData</span> <span class="nf">appendData</span><span class="p">:</span><span class="n">data</span><span class="p">];</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>上面的这个函数才是真正干事的，AFURLSessionManager类中的同名方法只是打了一个酱油。当请求结束的时候，同样首先会调用AFURLSessionManager中的方法：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManager类的方法
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//这是AFURLSessionManager类的方法
 </span><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">URLSession</span><span class="p">:(</span><span class="n">NSURLSession</span> <span class="o">*</span><span class="p">)</span><span class="nv">session</span>
               <span class="nf">task</span><span class="p">:(</span><span class="n">NSURLSessionTask</span> <span class="o">*</span><span class="p">)</span><span class="nv">task</span>
 <span class="nf">didCompleteWithError</span><span class="p">:(</span><span class="n">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span>
@@ -373,10 +369,9 @@
     <span class="p">}</span>
 
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>真正干事的还是AFURLSessionManagerTaskDelegate类中的同名方法。这里给出这个方法的部分代码：</p>
-<div class="language-objc highlighter-rouge"><pre class="highlight"><code><span class="c1">//在没有错误的时候就执行这一段代码
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//在没有错误的时候就执行这一段代码
 </span><span class="n">dispatch_async</span><span class="p">(</span><span class="n">url_session_manager_processing_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
     <span class="n">NSError</span> <span class="o">*</span><span class="n">serializationError</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
     <span class="n">responseObject</span> <span class="o">=</span> <span class="p">[</span><span class="n">manager</span><span class="p">.</span><span class="n">responseSerializer</span> <span class="nf">responseObjectForResponse</span><span class="p">:</span><span class="n">task</span><span class="p">.</span><span class="n">response</span> <span class="nf">data</span><span class="p">:</span><span class="n">data</span> <span class="n">error</span><span class="o">:&amp;</span><span class="n">serializationError</span><span class="p">];</span>
@@ -405,8 +400,7 @@
     <span class="p">});</span>
 <span class="p">});</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>至此整个代理过程就结束了。其中有一个地方值得注意一下，那就是每用manager创建一个task时，manager都会以task的taskIdentifier属性为key，以delegate为value存入字典中。这样的做的目的应该是一个manager可以管理多个task。</p>
 
 <p>—EOF—</p>
