@@ -19,6 +19,10 @@ categories: objectvie-c ReactiveCocoa
 
 ## RACSingal相关的类
 
+<!-- ReactiveCocoa里信号都是泛型的，如UITextField的信号是NSString类型的信号，UISlider的信号是NSNumber信号，在涉及到信号的绑定时，不同类型的信号需要map一下。之前我将UITextField信号绑定在UISlider上，想在UITextField上输入数字的时候UISlider的value值跟着变，虽然可以用RACChannelTerminal来实现，但我就是想用RAC宏来绑定信号。刚开始是这样的： -->
+```
+```
+
 ```
 RACEmptySignal ：空信号，用来实现 RACSignal 的 +empty 方法；
 RACReturnSignal ：一元信号，用来实现 RACSignal 的 +return:方法；

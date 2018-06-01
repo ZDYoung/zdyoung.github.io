@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 语法高亮 -->
+<!--     <link href="http://cdn.bootcss.com/highlight.js/8.0/styles/monokai_sublime.min.css" rel="stylesheet">   -->
+     <link rel="stylesheet" href="/css/highlight/styles/default.css">
+    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>
+    
+        关于AutoLayout的一些总结 &#8211; 
+    
+        Alan's blog
+    </title>
+
+    <link rel="dns-prefetch" href="//maxcdn.bootstrapcdn.com">
+    <link rel="dns-prefetch" href="//cdn.mathjax.org">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AutoLayout常用的概念和一些经典的使用场景。">
+    <meta name="robots" content="all">
+    <meta name="author" content="冬阳">
+    
+    <meta name="keywords" content="objectvie-c, AuotLayout">
+    <link rel="canonical" href="http://localhost:4000/objectvie-c/auotlayout/2018/05/31/%E5%85%B3%E4%BA%8EAutoLayout%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/">
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed for Alan's blog" href="/feed.xml" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css?201806011155" type="text/css">
+
+    <!-- Fonts -->
+    
+    <link href='//fonts.googleapis.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'>
+    
+    
+
+    <!-- MathJax -->
+    
+
+    <!-- Verifications -->
+    
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="关于AutoLayout的一些总结">
+    <meta property="og:description" content="A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff.">
+    <meta property="og:url" content="http://localhost:4000/objectvie-c/auotlayout/2018/05/31/%E5%85%B3%E4%BA%8EAutoLayout%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/">
+    <meta property="og:site_name" content="Alan's blog">
+    
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    
+    <meta name="twitter:title" content="关于AutoLayout的一些总结" />
+    <meta name="twitter:description" content="AutoLayout常用的概念和一些经典的使用场景。" />
+    <meta name="twitter:url" content="http://localhost:4000/objectvie-c/auotlayout/2018/05/31/%E5%85%B3%E4%BA%8EAutoLayout%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/" />
+    
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+
+    
+    <script type="text/javascript">
+       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+       ga('create', 'UA-98661459-1', 'auto');
+       ga('send', 'pageview');
+    </script>
+    
+</head>
+
+<body class="site animated fade-in-down">
+  
+	
+
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="http://localhost:4000" class="site-title">Alan's blog</a>
+      <nav class="site-nav">
+        
+    
+
+    
+        <a href="/about/">About Me</a>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+    
+
+    
+
+    
+        <a href="/contact/">Contact Me</a>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+      </nav>
+      <div class="clearfix"></div>
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+
+  <h2>关于AutoLayout的一些总结</h2>
+  <span class="post-meta">2018-05-31</span><br>
+  
+  <span class="post-meta small">
+  
+    3 minute read
+  
+  </span>
+</div>
+
+<article class="post-content">
+  <p>标签： objectvie-c AuotLayout</p>
+
+<h1 id="布局方式">布局方式</h1>
+<h2 id="autolayout">AutoLayout</h2>
+
+<p>Masonry使用AutoLayout布局方式，使用一组约束，构成一个一次方程来计算出视图的x，y，width，heigth。确定视图的约束属性有：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NSLayoutAttributeLeft（视图左边）
+NSLayoutAttributeRight（视图右边）
+NSLayoutAttributeTop（视图上边）
+NSLayoutAttributeBottom（视图底边）
+NSLayoutAttributeLeading（视图前边，与左边含义一样）
+NSLayoutAttributeTrailing（视图后边，与右边含义一样）
+NSLayoutAttributeWidth（视图宽度）
+NSLayoutAttributeHeight（视图高度）
+NSLayoutAttributeCenterX（视图水平居中）
+NSLayoutAttributeCenterY（视图垂直居中）
+
+以下使用默认值与View有关
+
+NSLayoutAttributeRightMargin
+NSLayoutAttributeTopMargin
+NSLayoutAttributeBottomMargin
+NSLayoutAttributeLeadingMargin
+NSLayoutAttributeTrailingMargin
+NSLayoutAttributeCenterXWithinMargins
+NSLayoutAttributeCenterYWithinMargins
+
+NSLayoutRelationLessThanOrEqual(小于等于) NSLayoutRelationEqual（等于） NSLayoutRelationGreaterThanOrEqual（大于等于）
+</code></pre></div></div>
+
+<p><img src="/images/AutoLayout.png" alt="AutoLayout" /></p>
+
+<p>图中设置RedView的leading约束，公式为：RedView的左边与BlueView的右边的距离为8，这样就确定了RedView的左边位置也就确定了RedView的x坐标位置。使用AutoLayout布局视图时，所设置的约束必须能够让布局引擎计算出视图的x，y坐标与width和height，才能正确的显示视图。对于UIButton、UILabel、UIImageView来说，这些固件有intrinsic content size，只要设置了内容，那么其大小就固定了，所以使用AutoLayout布局时，只需要约束其左边与右边。intrinsic content size可以重写get方法，返回自定义的大小。UIView有一个layoutMargins属性，用于指定视图和它的子视图之间的边距。默认是{8,8,8,8}，但是如果是viewController的root view则top和bottom的margins为0，左右margins可能是16或者20，这取决于当前的view尺寸，并且不能修改。</p>
+
+<p>每一条约束都有优先级， 用于存在多套约束的情况下，解决约束冲突问题，优先级范围为1-1000，数值越大，优先级越高，高优先级的约束会覆盖低优先级的约束。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[subView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(superView).offset(10);
+    make.left.equalTo(superView).offset(8).priorityMedium();
+    make.right.equalTo(superView).offset(-8).priorityMedium();
+    make.height.mas_equalTo(100);
+    make.width.mas_equalTo(50).priorityHigh();
+}];
+</code></pre></div></div>
+
+<p>上例中，设置了左右约束，就能确定视图的宽度，如果设置优先级，在布局时就会产生冲突，AutoLayout不知道怎么布局视图的宽度。设置宽度的优先级之后，布局时则会优先满足视图的宽度约束。在AutoLayout中，有：Content Compression Resistance和Content Hugging，分别为抗压缩与抗拉伸，其优先级从1-1000，默认为750。分为水平和垂直两个方面，抗压缩的值越高，视图越不容易被压缩，值越低视图越容易受到压缩；抗拉伸类似。</p>
+
+<p>抗拉伸测试：为了测试内容吸附优先级我们在页面上添加两个View，分别是topView和bottomView，设置他们都水平居中，然后分别和页面的顶部和底部对齐：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIView *topView = [UIView new];
+topView.backgroundColor = [UIColor colorWithRed:.2 green:.4 blue:.6 alpha:1];
+[self.view addSubview:topView];
+[topView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.centerX.mas_equalTo(self.view);
+    make.top.mas_equalTo(self.mas_topLayoutGuideBottom);//和导航栏底部对齐
+    make.width.height.mas_equalTo(50);
+}];
+ 
+UIView *bottomView = [UIView new];
+bottomView.backgroundColor = [UIColor colorWithRed:.2 green:.4 blue:.6 alpha:1];
+[self.view addSubview:bottomView];
+[bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.centerX.mas_equalTo(self.view);
+    make.bottom.mas_equalTo(self.mas_bottomLayoutGuideBottom);//和页面底部对齐
+    make.width.height.mas_equalTo(50);
+}];
+</code></pre></div></div>
+
+<p>运行结果：</p>
+
+<p><img src="/images/AutoLayout_result1.jpg" alt="AutoLayout_result1" /></p>
+
+<p>下面设置topView.bottom + 40 = bottomView.top，这样在运行的时候其实是会有冲突的，height约束与top约束冲突了。</p>
+
+<p>设置后结果:</p>
+
+<p><img src="/images/AutoLayout_result2.jpg" alt="AutoLayout_result2" /></p>
+
+<p>从运行结果来看，topView显示被拉伸了，如果想要topView正常显示不被拉伸：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[topView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+</code></pre></div></div>
+<p>除了这种方法，还可以使用优先级，来解决冲突，设置bottomView的width和height的优先级最高，设置topView的width和height优先级比bottomView低即可，这样AutoLayout会优先满足bottmView的高度与宽度大小。</p>
+
+<h2 id="uilayoutguide">UILayoutGuide</h2>
+<p>iOS9之后出来的，其直接依赖NSLayoutAnchor实现，属性有:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSLayoutAnchor</span><span class="err">属性</span>
+<span class="cm">/* Constraint creation conveniences. See NSLayoutAnchor.h for details.
+ */</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutXAxisAnchor</span> <span class="o">*</span><span class="n">leadingAnchor</span><span class="p">;</span>    <span class="c1">//x坐标
+</span><span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutXAxisAnchor</span> <span class="o">*</span><span class="n">trailingAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutXAxisAnchor</span> <span class="o">*</span><span class="n">leftAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutXAxisAnchor</span> <span class="o">*</span><span class="n">rightAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutYAxisAnchor</span> <span class="o">*</span><span class="n">topAnchor</span><span class="p">;</span>    <span class="c1">//y坐标
+</span><span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutYAxisAnchor</span> <span class="o">*</span><span class="n">bottomAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutDimension</span> <span class="o">*</span><span class="n">widthAnchor</span><span class="p">;</span>    <span class="c1">//宽
+</span><span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutDimension</span> <span class="o">*</span><span class="n">heightAnchor</span><span class="p">;</span>    <span class="c1">//高
+</span><span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutXAxisAnchor</span> <span class="o">*</span><span class="n">centerXAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutYAxisAnchor</span> <span class="o">*</span><span class="n">centerYAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutYAxisAnchor</span> <span class="o">*</span><span class="n">firstBaselineAnchor</span><span class="p">;</span>
+<span class="k">@property</span><span class="p">(</span><span class="n">readonly</span><span class="p">,</span> <span class="n">strong</span><span class="p">)</span> <span class="n">NSLayoutYAxisAnchor</span> <span class="o">*</span><span class="n">lastBaselineAnchor</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>这种布局方式相对AutoLayout来说，非常简洁。官方例子：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// Creating constraints using NSLayoutConstraint
+[NSLayoutConstraint
+ constraintWithItem:subview
+ attribute:NSLayoutAttributeLeading
+ relatedBy:NSLayoutRelationEqual
+ toItem:self.view
+ attribute:NSLayoutAttributeLeadingMargin
+ multiplier:1.0
+ constant:0.0].active = YES;
+  
+[NSLayoutConstraint
+ constraintWithItem:subview
+ attribute:NSLayoutAttributeTrailing
+ relatedBy:NSLayoutRelationEqual
+ toItem:self.view
+ attribute:NSLayoutAttributeTrailingMargin
+ multiplier:1.0
+ constant:0.0].active = YES;
+  
+// Creating the same constraints using Layout Anchors
+UILayoutGuide *margin = self.view.layoutMarginsGuide;
+[subview.leadingAnchor constraintEqualToAnchor:margin.leadingAnchor].active = YES;
+[subview.trailingAnchor constraintEqualToAnchor:margin.trailingAnchor].active = YES;
+</code></pre></div></div>
+<h1 id="应用">应用</h1>
+
+<p>（1）在superView上纵向放置两个subView，使得两个子视图与父视图间的垂直间距和子视图之间的垂直间距始终相等，无论两个子视图的大小如何变化，图黑线长度。</p>
+
+<p><img src="/images/AutoLayout_eg1.png" alt="AutoLayout_eg1" /></p>
+
+<ul>
+  <li>使用UILayoutGuide</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>subView1.translatesAutoresizingMaskIntoConstraints = NO;
+subView2.translatesAutoresizingMaskIntoConstraints = NO;
+     
+UILayoutGuide *space1 = [[UILayoutGuide alloc] init];
+UILayoutGuide *space2 = [[UILayoutGuide alloc] init];
+UILayoutGuide *space3 = [[UILayoutGuide alloc] init];
+ 
+[self.superView addLayoutGuide:space1];
+[self.superView addLayoutGuide:space2];
+[self.superView addLayoutGuide:space3];
+ 
+[space1.topAnchor constraintEqualToAnchor:self.superView.topAnchor].active = YES;
+[space1.bottomAnchor constraintEqualToAnchor:subView1.topAnchor].active = YES;
+ 
+[space2.topAnchor constraintEqualToAnchor:subView1.bottomAnchor].active = YES;
+[space2.bottomAnchor constraintEqualToAnchor:subView2.topAnchor].active = YES;
+ 
+[space3.topAnchor constraintEqualToAnchor:subView2.bottomAnchor].active = YES;
+[space3.bottomAnchor constraintEqualToAnchor:self.superView.bottomAnchor].active = YES;
+ 
+[space1.heightAnchor constraintEqualToAnchor:space2.heightAnchor].active = YES;
+[space2.heightAnchor constraintEqualToAnchor:space3.heightAnchor].active = YES;
+</code></pre></div></div>
+<ul>
+  <li>使用AutoLayout</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIView *spaceView1 = UIView.new;
+UIView *spaceView2 = UIView.new;
+UIView *spaceView3 = UIView.new;
+[self.superView addSubview:spaceView1];
+[self.superView addSubview:spaceView2];
+[self.superView addSubview:spaceView3];
+ 
+[spaceView1 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(self.superView.mas_top);
+    make.centerX.equalTo(self.superView);
+    make.bottom.equalTo(subView1.mas_top);
+    make.width.mas_equalTo(10);
+    make.height.mas_equalTo(@[spaceView2, spaceView3]);
+}];
+[subView1 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(spaceView1.mas_bottom);
+    make.centerX.equalTo(self.superView);
+    make.height.equalTo(@100);
+    make.width.equalTo(@100);
+    make.bottom.equalTo(spaceView2.mas_top);
+}];
+[spaceView2 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(subView1.mas_bottom);
+    make.centerX.equalTo(self.superView);
+    make.bottom.equalTo(subView2.mas_top);
+    make.width.mas_equalTo(@10);
+    make.height.mas_equalTo(@[spaceView1, spaceView3]);
+}];
+[subView2 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(spaceView2.mas_bottom);
+    make.centerX.equalTo(self.superView);
+    make.bottom.equalTo(spaceView3.mas_top);
+    make.height.equalTo(@50);
+    make.width.equalTo(@50);
+}];
+[spaceView3 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(subView2.mas_bottom);
+    make.centerX.equalTo(self.superView);
+    make.bottom.equalTo(self.superView.mas_bottom);
+    make.width.mas_equalTo(10);
+    make.height.mas_equalTo(@[spaceView1, spaceView2]);
+}];
+</code></pre></div></div>
+
+<p>比较：使用AutoLayout想保它们之间的距离始终相等，需要使用三个占位视图，并且隐藏，这样视图层级里多出三个占位视图，如果有消息产生，占位视图也会收到。使用UILayoutGuide则不需要占位视图避免了占位视图的缺点，且它不会出现在视图层级中，代码简洁易懂，但是只能运行在iOS 9以上。</p>
+
+<p>（2） 使用Masonry自动撑起scrollView的高度</p>
+
+<p>使用自动布局自动撑起视图的高度时，子视图不直接添加到scrollView上，而是添加到一个contentView，由它撑起scorllView的高度，原来scrollView的子视图变为contentView的子视图。对scrollView使用自动布局时牢记两点：</p>
+
+<ol>
+  <li>UIScrollView自身的约束按照正常的视图添加。</li>
+  <li>内部子控件的约束不能按照UIScrollView来设置，同时必须完整，否则撑不起contentSize。</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIView* contentView = UIView.new;
+[self.scrollView addSubview:contentView];
+[contentView makeConstraints:^(MASConstraintMaker *make) {
+    make.edges.equalTo(self.scrollView);
+    make.width.equalTo(self.scrollView);
+}];
+UIView *lastView;
+CGFloat height = 25;
+ 
+for (int i = 0; i &lt; 10; i++) {
+    UIView *view = UIView.new;
+    view.backgroundColor = [self randomColor];
+    [contentView addSubview:view];
+    [view mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(lastView ? lastView.bottom : @0);
+        make.left.equalTo(@0);
+        make.width.equalTo(contentView.width);
+        make.height.equalTo(@(height));
+    }];
+    height += 25;
+    lastView = view;
+}
+[contentView makeConstraints:^(MASConstraintMaker *make) {
+    make.bottom.equalTo(lastView.bottom);
+}];
+</code></pre></div></div>
+
+<p>（3）在自动计算UITableViewCell高度中的使用</p>
+
+<p>假定我们有如下需求：</p>
+
+<p><img src="/images/AutoLayout_eg3.jpg" alt="AutoLayout_eg3" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//图片距左边距离为10，上下居中
+[_cellImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.left.mas_equalTo(self.contentView).offset(10);
+    make.centerY.mas_equalTo(self.contentView);
+    make.top.mas_greaterThanOrEqualTo(self.contentView).offset(10);
+    make.bottom.mas_lessThanOrEqualTo(self.contentView).offset(-10);
+}];
+//标题Label,一行显示
+[_nameLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.left.mas_equalTo(self.cellImageView.mas_right).offset(6);
+    make.right.mas_lessThanOrEqualTo(self.contentView).offset(-10);
+    make.top.mas_equalTo(self.contentView).offset(10);
+}];
+//内容label,多行显示
+_contentLabel.numberOfLines = 0;
+[self.contentView addSubview:_contentLabel];
+[_contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.left.mas_equalTo(self.nameLabel);
+    make.top.mas_equalTo(self.nameLabel.mas_bottom).offset(6);
+}];
+//标题Label,一行显示
+[_companyLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.left.mas_equalTo(self.contentLabel);
+    make.right.mas_lessThanOrEqualTo(self.contentView).offset(-10);
+    make.top.mas_equalTo(self.contentLabel.mas_bottom).offset(6);
+    make.bottom.mas_equalTo(self.contentView).offset(-10);//设定了这个自动计算cell高度时才知道具体cell的高度
+}];
+ 
+[_nameLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+[_companyLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+[_contentLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+</code></pre></div></div>
+
+<p>（4）优先级应用</p>
+
+<p>在页面垂直排列三个视图，彼此之间相距一定距离，中间的视图可有可无，当中间视图存在的时候，三个视图正常排列；当中间视图消失时，底部视图上移至中间视图位置，或者距顶部视图一定距离。</p>
+
+<p>初始位置：</p>
+
+<p><img src="/images/AutoLayout_eg4-1.png" alt="AutoLayout_eg4-1" /></p>
+
+<p>新位置：</p>
+
+<p><img src="/images/AutoLayout_eg4-2.png" alt="AutoLayout_eg4-2" /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[self.topView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(self.view.mas_top).offset(100);
+    make.centerX.equalTo(self.view);
+    make.width.height.equalTo(@50);
+}];
+[self.midView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(self.topView.mas_bottom).offset(50);
+    make.centerX.equalTo(self.view);
+    make.size.equalTo(self.topView);
+}];
+[self.bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.size.equalTo(self.topView);
+    make.centerX.equalTo(self.view);
+    make.top.equalTo(self.midView.mas_bottom).offset(50);
+    make.top.equalTo(self.topView.mas_bottom).offset(50).priorityHigh();
+}];
+</code></pre></div></div>
+
+<p>（5）对某个视图，不在同的条件下，会有不同的约束。</p>
+
+<p>在ViewController中添加一个blueView，水平居中，初始状态为距ViewController的顶部一定距离，点击右上角按钮后，blueView移至相距ViewController底部一定距离处。</p>
+
+<p>第一种情况：</p>
+
+<p><img src="/images/AutoLayout_eg5-1.png" alt="AutoLayout_eg5—1" /></p>
+
+<p>第二种情况：</p>
+
+<p><img src="/images/AutoLayout_eg5-2.png" alt="AutoLayout_eg5—2" /></p>
+
+<ol>
+  <li>设置两套约束，代价较大。因为视图的水平位置不变，大小不变，变的只是Y方向的约束。使用两套约束的问题在于：对这些不变的约束先remove约束再add约束。</li>
+  <li>设置一套约束，持有Y方向上的两种益约束（需要设置两个约束的优先级），任何时刻，只有一个约束生效，避免了第一种方案的缺点。</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIView *subView = UIView.new;
+subView.backgroundColor = [UIColor blueColor];
+[self.view addSubview:subView];
+ 
+[subView mas_makeConstraints:^(MASConstraintMaker *make) {
+    self.topConstraint = make.top.equalTo(self.view).offset(100);
+    make.width.height.mas_equalTo(50);
+    make.centerX.equalTo(self.view);
+    self.bottmConstraint = make.bottom.equalTo(self.view).offset(-50).;
+}];
+[self.bottmConstraint deactivate];
+- (void)click
+{
+    self.isClick = !self.isClick;
+    if (self.isClick) {
+        [self.bottmConstraint activate];
+        [self.topConstraint deactivate];
+    } else {
+        [self.bottmConstraint deactivate];
+        [self.topConstraint activate];
+    }
+}
+</code></pre></div></div>
+<p>（6）topLayoutGuide、bottomLayoutGuide使用</p>
+
+<p>iOS 7以后ViewController增加了这两个属性，tooLayoutGuide代表ViewController最顶部，除了状态栏和导航栏（如果有）；bottomLayoutGuide代表ViewController最底部，除了tabbar（如果有）。</p>
+
+<p><img src="/images/AutoLayout_eg6.png" alt="AuotLayout_eg6" /></p>
+
+<p>如果某个视图设置了topLayoutGudie对齐，那么在有导航栏的情况下视图的顶部总是紧跟在导航栏的底部，在没有导航栏的情况下视图的顶部紧跟在状态栏的底部，bottomLayoutGuide类似。设置这两个约束可以在布局视图的时候避开导航栏、状态栏和tabbar。这两个ViewController的属性，实质为两个虚拟的占位View。如：在ViewController上添加一个View宽和高均为50，水平居中，紧贴状态栏或者导航栏之下。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIView *view1 = UIView.new;
+view1.backgroundColor = [UIColor blueColor];
+[self.view addSubview:view1];
+ 
+[view1 mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.top.equalTo(self.mas_topLayoutGuide);
+    make.centerX.equalTo(self.view);
+    make.width.height.equalTo(@50);
+}];
+</code></pre></div></div>
+<p>iOS 11又引入了一个Safe Area（安全区域）的概念，苹果建议在这个安全区域内放置UI控件。这个安全区域的范围其实就是整个屏幕隔离出状态栏，导航栏，tabar，以及iPhone X顶部刘海，底部虚拟home手势区域的范围。在iOS 11以后想要达到上述效果使用下面的代码：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[view mas_makeConstraints:^(MASConstraintMaker *make) {
+   make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
+   make.centerX.equalTo(self.view);
+   make.width.height.mas_equalTo(50);
+}];
+</code></pre></div></div>
+
+</article>
+
+
+
+
+<p>由于disqus被墙，评论需要VPN哦。</p>
+
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname  = 'https-zdyoung-github-io';
+    var disqus_identifier = '/objectvie-c/auotlayout/2018/05/31/关于AutoLayout的一些总结';
+    var disqus_title      = "关于AutoLayout的一些总结";
+
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="center">
+  <div class="measure">
+    <small>
+    	<div>
+    		&copy 2017 Alan Zhang
+    	</div>
+    	<div>
+    		Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a> | Theme-<a href="https://github.com/johnotander/pixyll">pixyll</a>
+    	</div>
+    </small>
+  </div>
+</footer>
+
+
+  <!-- 语法高亮 -->
+  <!-- <script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>
+  <script >hljs.initHighlightingOnLoad();</script>   -->
+  <script type="text/javascript" src="/css/highlight/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- 语法高亮 -->
+</body>
+</html>
