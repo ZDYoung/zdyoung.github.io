@@ -7,6 +7,77 @@
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>UIView中的frame与bounds的关系</title>
+        <description>&lt;p&gt;标签： objectvie-c UIView&lt;/p&gt;
+
+&lt;h1 id=&quot;概念&quot;&gt;概念&lt;/h1&gt;
+
+&lt;p&gt;在UIView中，frame和bounds属性都是CGRect类型，两者非常相似，在平时的开发中，如果使用AutoLayout进行布局那么frame基本上用不上，而bounds使用的场景也不多，但是在用到的时候，经常想不明白，不明所以，这次要彻底搞懂。&lt;/p&gt;
+
+&lt;p&gt;frame是相对于父视图的坐标的，frame中的x和y，代表视图在父视图的起始坐标；frame中的size，代表视图在父视图中的大小。bounds是相对于视图本身而言，bounds的x和y定义了视图左上角的点，当有子视图的时候，子视图以父视图的左上角为原点(0,0)来决定自身在父视图的位置。所以父视图的bounds影响的是其子视图在父视图上的位置，视图的bounds属性的x和y默认为0，即以视图的左上角的点为坐标原点，大小为视图的大小。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;frame：描述当前视图在其父视图中的位置和大小。&lt;/li&gt;
+  &lt;li&gt;bounds：描述当前视图在其自身坐标系统中的位置和大小。&lt;/li&gt;
+  &lt;li&gt;center：描述当前视图的中心点在其父视图中的位置。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;想要确定视图在父视图上的大小和位置，可以通过：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;设置frame。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;设置bounds和center，bounds可以确定视图大小，center可以确定视图位置。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;frame、bounds、center的关系：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;center.x = frame.origin.x + frame.size.width / 2
+center.y = frame.origin.y + frame.size.heigth / 2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;当设置bounds不设置frame时：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;frame.origin.x = -bounds.size.width / 2
+frame.origin.y = -bounds.size.heigth / 2
+
+frame.size.width = bounds.size.width
+frame.size.width = bounds.size.width
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;因此，当设置bounds不设置frame时，其center始终为0。&lt;/p&gt;
+
+&lt;h1 id=&quot;demo&quot;&gt;Demo&lt;/h1&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
+[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
+view1.backgroundColor = [UIColor redColor];  
+[self.view addSubview:view1];//添加到self.view  
+NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
+  
+UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
+view2.backgroundColor = [UIColor yellowColor];  
+[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
+NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;运行结果：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;2018-06-06 16:44:08.794861+0800 LearnCALayer[47486:28184109] view1 frame:\{\{20, 20\}, {280, 250}}========view1 bounds:\{\{-20, -20\}, {280, 250}}
+2018-06-06 16:44:08.795074+0800 LearnCALayer[47486:28184109] view2 frame:\{\{0, 0\}, {100, 100}}========view2 bounds:\{\{0, 0\}, {100, 100}}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/frame_eg.jpg&quot; alt=&quot;frame_eg&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 06 Jun 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/objectvie-c/uiview/2018/06/06/UIView%E4%B8%AD%E7%9A%84frame%E4%B8%8Ebounds%E7%9A%84%E5%85%B3%E7%B3%BB/</link>
+        <guid isPermaLink="true">http://localhost:4000/objectvie-c/uiview/2018/06/06/UIView%E4%B8%AD%E7%9A%84frame%E4%B8%8Ebounds%E7%9A%84%E5%85%B3%E7%B3%BB/</guid>
+      </item>
+    
+      <item>
         <title>NSFastEnumeration协议快速枚举</title>
         <description>&lt;p&gt;标签： objectvie-c NSFastEnumeration&lt;/p&gt;
 
@@ -2171,239 +2242,6 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
         <pubDate>Fri, 05 May 2017 00:00:00 +0800</pubDate>
         <link>http://localhost:4000/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/</link>
         <guid isPermaLink="true">http://localhost:4000/objective-c/afnetworking/2017/05/05/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD/</guid>
-      </item>
-    
-      <item>
-        <title>AFNetworking3.0源码解读之数据请求</title>
-        <description>&lt;p&gt;标签： objective-c AFNetworking&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h3 id=&quot;前言&quot;&gt;前言&lt;/h3&gt;
-
-&lt;p&gt;无论做什么开发，都避免不了和网络打交道。在iOS中，网络请求这一块，大家肯定用过AFNetworking库。那么它到底是怎么实现的呢？本文主要讲它的数据请求部分，在以后博客中，会慢慢讲解其他部分。网上其实已经有很多相关的博客了，有些写的更好，写这篇博客的原因也是为了方便记下自己在看一些开源库的代码时学习到的编程技法、编程思想和问题的解决方案。&lt;/p&gt;
-
-&lt;h3 id=&quot;正文&quot;&gt;正文&lt;/h3&gt;
-&lt;p&gt;先从AFURLSessionManager开始，可以说它是整个库的核心，后面的AFHTTPSessionManager是就继承自AFURLSessionManager类。AFURLSessionManager类主要是对NSURLSession还有相关代理协议的封装。这个类对用户暴露的接口很少，在实现文件里定义了大量的私有方法，此外还对AFURLSessionManager进行了扩展。进行入AFURLSessionManager.m文件内看可以看到这样的结构：
-&lt;img src=&quot;/images/AFURLSessionManager类的结构图.png&quot; alt=&quot;AFURLSessionManager类结构图&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;在实现文件里，AFURLSessionManager.m里定义了两个类，一个类是AFURLSessionManagerTaskDelegate，还有一个就是_AFURLSessionTaskSwizzling。&lt;/p&gt;
-
-&lt;p&gt;AFURLSessionManagerTaskDelegate这个类从名字上看就知道，它是用来实现代理的，所有的网络请求回调都是经过它。呆会通过一个实际的例子来的说明。&lt;/p&gt;
-
-&lt;p&gt;那么_AFURLSessionTaskSwizzling类是用来干吗的呢？在写这篇博客的时候，我还没有通过例子实际的使用过，不过它的源码很少，通过看原码和注释大概知道，它是用来进行方法调配，使用了系统的运行期系统来交换两个方法的实现。注释中提到NSURLSessionTask的实现是通过class cluster来实现的，也就是说我们创建的一个NSURLSessionTask对象，并不是真正的创建这个对象而是创建了一个名字叫__NSCFLocalDataTask。这个类只干了一件了，那就是对任务的&lt;code class=&quot;highlighter-rouge&quot;&gt;resume&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;suspend&lt;/code&gt;进行了交换，目的可能就是要实现任务的暂停和恢复的功能。对这个类先说这么点点个人理解吧。&lt;/p&gt;
-
-&lt;p&gt;接下来，以官方给出的例子跟踪一下，它的调用过程以下是源码：&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionConfiguration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionConfiguration&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultSessionConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;AFURLSessionManager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFURLSessionManager&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;initWithSessionConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;responseSerializer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFHTTPResponseSerializer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;serializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;NSURL&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;URL&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURL&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;URLWithString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;http://www.baidu.com&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;NSURLRequest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLRequest&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;requestWithURL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;URL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;dataTaskWithRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLResponse&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;Error: %@&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        
-        &lt;span class=&quot;n&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;initWithData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;  &lt;span class=&quot;nf&quot;&gt;encoding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSUTF8StringEncoding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;%@&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;%@&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;resume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;该代码核心只有两句一个是manager的初始化还有一个就是dataTask的创建。先来看看初始化：&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;instancetype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;initWithSessionConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionConfiguration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;super&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionConfiguration&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultSessionConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sessionConfiguration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;//默认配置
-&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;operationQueue&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSOperationQueue&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;operationQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;maxConcurrentOperationCount&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;//最大并发数，此处应该当成串行队列来用了
-&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSession&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;sessionWithConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sessionConfiguration&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;delegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delegateQueue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;operationQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;//创建session，设置代理对象
-&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;responseSerializer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFJSONResponseSerializer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;serializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;//默认的解析器
-&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;securityPolicy&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFSecurityPolicy&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultPolicy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-&lt;span class=&quot;cp&quot;&gt;#if !TARGET_OS_WATCH
-&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reachabilityManager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFNetworkReachabilityManager&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;sharedManager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;cp&quot;&gt;#endif
-&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mutableTaskDelegatesKeyedByTaskIdentifier&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSMutableDictionary&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSLock&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AFURLSessionManagerLockName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getTasksWithCompletionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uploadTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;downloadTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addDelegateForDataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionUploadTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uploadTask&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uploadTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addDelegateForUploadTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uploadTask&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;progress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionDownloadTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;downloadTask&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;downloadTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addDelegateForDownloadTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;downloadTask&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;progress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;destination&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSNotificationCenter&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultCenter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addObserver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskDidResume&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFNSURLSessionTaskDidResumeNotification&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSNotificationCenter&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultCenter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addObserver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@selector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskDidSuspend&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFNSURLSessionTaskDidSuspendNotification&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;看起来好多，对我们本次的目的其实需要关心的东西很少，我都给出来了注释。&lt;/p&gt;
-
-&lt;p&gt;第二处是dataTask的创建，为了说明，先把程序跑起来看看函数的调用栈。任务一启动，首先进入到了[AFURLSessionManager dataTaskWithRequest:completionHandler:]函数中：&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dataTaskWithRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLRequest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;request&lt;/span&gt;
-                            &lt;span class=&quot;nf&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLResponse&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;completionHandler&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;__block&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;dispatch_sync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_session_manager_creation_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;dataTaskWithRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;addDelegateForDataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;函数体内主要是在一个GCD队列里创建dataTask，此处用到的是GCD同步API。然后调用了第一个私有方法[AFURLSessionManager addDelegateForDataTask:completionHandler:]来设置dataTask的代理和回调的block:&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;addDelegateForDataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;dataTask&lt;/span&gt;
-             &lt;span class=&quot;nf&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLResponse&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;completionHandler&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;AFURLSessionManagerTaskDelegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFURLSessionManagerTaskDelegate&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskDescription&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskDescriptionForSessionTasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;setDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;forTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;在这个函数内真正的设置了网络的代理，就是刚才提到的AFURLSessionManagerTaskDelegate类，这里有一个小细节需要注意一下，就是这一行&lt;code class=&quot;highlighter-rouge&quot;&gt;delegate.manager = self&lt;/code&gt;，在该函数内定义了一个delegate并且持有了manager,而在AFURLSessionManagerTaskDelegate定义中声明了一个AFURLSessionManager对象manager。这就是说delegate持有了manager，manager持有了delegate，循环引用的问题就出来了，这里的解决方法是通过将AFURLSessionManagerTaskDelegate中的manager属性的内存管理语义声明为weak。我们看一下，该类的声明就知道了。&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;AFURLSessionManagerTaskDelegate&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NSObject&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionTaskDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSURLSessionDataDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSURLSessionDownloadDelegate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weak&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AFURLSessionManager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;//内存管理语义为weak
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSMutableData&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mutableData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSProgress&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;progress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSURL&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;downloadFileURL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AFURLSessionDownloadTaskDidFinishDownloadingBlock&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;downloadTaskDidFinishDownloading&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AFURLSessionTaskCompletionHandler&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;@end&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;接着上面的说，接下来函数的调用栈就进入了[AFURLSessionManager setDelegate:dataTask:]。&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;setDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFURLSessionManagerTaskDelegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;delegate&lt;/span&gt;
-            &lt;span class=&quot;nf&quot;&gt;forTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;task&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;NSParameterAssert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;NSParameterAssert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mutableTaskDelegatesKeyedByTaskIdentifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskIdentifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;这个函数是用来干吗的呢？还加了锁。从代码上看，就是保存task的代理。&lt;/p&gt;
-
-&lt;p&gt;至此，所有的准备工作都做完了只等我们去启动这个任务了。没错，就是通过这一句&lt;code class=&quot;highlighter-rouge&quot;&gt;[dataTask resume]&lt;/code&gt;。写到这，先来总结一下，这些准备工作的函数调用过程，直接甩图了：
-&lt;img src=&quot;/images/调用过程.png&quot; alt=&quot;调用过程&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;接下来就是代理了，代理的过程是这样的，AFURLSessionManager自己实现了代理协议，但是在代理协议方法中，根据dataTask的taskIdentifier找到相应的delegate对象，把具体代理该做的事，交给这个delegate。任务启动后第一个调用的是AFURLSessionManager这个函数：&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//这是AFURLSessionManager类的方法
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;URLSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSession&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;session&lt;/span&gt;
-          &lt;span class=&quot;nf&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;dataTask&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;didReceiveData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSData&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;data&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;AFURLSessionManagerTaskDelegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;delegateForTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;URLSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;didReceiveData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTaskDidReceiveData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataTaskDidReceiveData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;可以看出它把delegate取出来之后就转到AFURLSessionManagerTaskDelegate类中去了，调用了AFURLSessionManagerTaskDelegate同名方法。&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//这是AFURLSessionManagerTaskDelegate类的方法
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;URLSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__unused&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSURLSession&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;session&lt;/span&gt;
-          &lt;span class=&quot;nf&quot;&gt;dataTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__unused&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSURLSessionDataTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;dataTask&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;didReceiveData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSData&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;data&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mutableData&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;appendData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;上面的这个函数才是真正干事的，AFURLSessionManager类中的同名方法只是打了一个酱油。当请求结束的时候，同样首先会调用AFURLSessionManager中的方法：&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//这是AFURLSessionManager类的方法
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;URLSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSession&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;session&lt;/span&gt;
-              &lt;span class=&quot;nf&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSURLSessionTask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;task&lt;/span&gt;
-&lt;span class=&quot;nf&quot;&gt;didCompleteWithError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;error&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;AFURLSessionManagerTaskDelegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;delegateForTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// delegate may be nil when completing a task in the background
-&lt;/span&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delegate&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;URLSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;didCompleteWithError&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;removeDelegateForTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskDidComplete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;taskDidComplete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;session&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;真正干事的还是AFURLSessionManagerTaskDelegate类中的同名方法。这里给出这个方法的部分代码：&lt;/p&gt;
-&lt;div class=&quot;language-objc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//在没有错误的时候就执行这一段代码
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_session_manager_processing_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;NSError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serializationError&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;responseSerializer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;responseObjectForResponse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serializationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;downloadFileURL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;downloadFileURL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AFNetworkingTaskDidCompleteSerializedResponseKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serializationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AFNetworkingTaskDidCompleteErrorKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serializationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;//这是真正干事的
-&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;dispatch_group_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionGroup&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url_session_manager_completion_group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionQueue&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_get_main_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    	&lt;span class=&quot;c1&quot;&gt;//执行completionHandler，把取到的数据传到外面去，这里的responseObject就是我们请求到的数据
-&lt;/span&gt;        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;responseObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serializationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_get_main_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NSNotificationCenter&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;defaultCenter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;postNotificationName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AFNetworkingTaskDidCompleteNotification&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;userInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;至此整个代理过程就结束了。其中有一个地方值得注意一下，那就是每用manager创建一个task时，manager都会以task的taskIdentifier属性为key，以delegate为value存入字典中。这样的做的目的应该是一个manager可以管理多个task。&lt;/p&gt;
-
-&lt;p&gt;—EOF—&lt;/p&gt;
-
-</description>
-        <pubDate>Wed, 03 May 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/objective-c/afnetworking/2017/05/03/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E8%AF%B7%E6%B1%82/</link>
-        <guid isPermaLink="true">http://localhost:4000/objective-c/afnetworking/2017/05/03/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E8%AF%B7%E6%B1%82/</guid>
       </item>
     
   </channel>

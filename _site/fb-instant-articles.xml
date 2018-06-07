@@ -9,6 +9,89 @@
     
         
             <item>
+                <title>UIView中的frame与bounds的关系</title>
+                <link>http://localhost:4000/objectvie-c/uiview/2018/06/06/UIView%E4%B8%AD%E7%9A%84frame%E4%B8%8Ebounds%E7%9A%84%E5%85%B3%E7%B3%BB/</link>
+                <content:encoded>
+                    <![CDATA[
+                    <p>标签： objectvie-c UIView</p>
+
+<h1 id="概念">概念</h1>
+
+<p>在UIView中，frame和bounds属性都是CGRect类型，两者非常相似，在平时的开发中，如果使用AutoLayout进行布局那么frame基本上用不上，而bounds使用的场景也不多，但是在用到的时候，经常想不明白，不明所以，这次要彻底搞懂。</p>
+
+<p>frame是相对于父视图的坐标的，frame中的x和y，代表视图在父视图的起始坐标；frame中的size，代表视图在父视图中的大小。bounds是相对于视图本身而言，bounds的x和y定义了视图左上角的点，当有子视图的时候，子视图以父视图的左上角为原点(0,0)来决定自身在父视图的位置。所以父视图的bounds影响的是其子视图在父视图上的位置，视图的bounds属性的x和y默认为0，即以视图的左上角的点为坐标原点，大小为视图的大小。</p>
+
+<ul>
+  <li>frame：描述当前视图在其父视图中的位置和大小。</li>
+  <li>bounds：描述当前视图在其自身坐标系统中的位置和大小。</li>
+  <li>center：描述当前视图的中心点在其父视图中的位置。</li>
+</ul>
+
+<p>想要确定视图在父视图上的大小和位置，可以通过：</p>
+
+<ol>
+  <li>
+    <p>设置frame。</p>
+  </li>
+  <li>
+    <p>设置bounds和center，bounds可以确定视图大小，center可以确定视图位置。</p>
+  </li>
+</ol>
+
+<p>frame、bounds、center的关系：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>center.x = frame.origin.x + frame.size.width / 2
+center.y = frame.origin.y + frame.size.heigth / 2
+</code></pre></div></div>
+
+<p>当设置bounds不设置frame时：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frame.origin.x = -bounds.size.width / 2
+frame.origin.y = -bounds.size.heigth / 2
+
+frame.size.width = bounds.size.width
+frame.size.width = bounds.size.width
+</code></pre></div></div>
+
+<p>因此，当设置bounds不设置frame时，其center始终为0。</p>
+
+<h1 id="demo">Demo</h1>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
+[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
+view1.backgroundColor = [UIColor redColor];  
+[self.view addSubview:view1];//添加到self.view  
+NSLog(@"view1 frame:%@========view1 bounds:%@",NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
+  
+UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
+view2.backgroundColor = [UIColor yellowColor];  
+[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
+NSLog(@"view2 frame:%@========view2 bounds:%@",NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
+</code></pre></div></div>
+
+<p>运行结果：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2018-06-06 16:44:08.794861+0800 LearnCALayer[47486:28184109] view1 frame:\{\{20, 20\}, {280, 250}}========view1 bounds:\{\{-20, -20\}, {280, 250}}
+2018-06-06 16:44:08.795074+0800 LearnCALayer[47486:28184109] view2 frame:\{\{0, 0\}, {100, 100}}========view2 bounds:\{\{0, 0\}, {100, 100}}
+</code></pre></div></div>
+
+<p><img src="/images/frame_eg.jpg" alt="frame_eg" /></p>
+
+                    ]]>
+                </content:encoded>
+                <guid isPermaLink="false">/objectvie-c/uiview/2018/06/06/UIView%E4%B8%AD%E7%9A%84frame%E4%B8%8Ebounds%E7%9A%84%E5%85%B3%E7%B3%BB/</guid>
+                <description>
+                    
+                    frame与bounds之间的关系，以及使用bounds与center的效果等同于frame
+                    
+                </description>
+                <pubDate>Wed, 06 Jun 2018 00:00:00 +0800</pubDate>
+                <author>冬阳</author>
+            </item>
+        
+    
+        
+            <item>
                 <title>NSFastEnumeration协议快速枚举</title>
                 <link>http://localhost:4000/objectvie-c/nsfastenumeration/2018/06/01/NSFastEnumeration-%E5%8D%8F%E8%AE%AE%E5%BF%AB%E9%80%9F%E6%9E%9A%E4%B8%BE/</link>
                 <content:encoded>
@@ -2523,33 +2606,6 @@ HTTP应答码也称为状态码，它反映了Web服务器处理HTTP请求状态
                     
                 </description>
                 <pubDate>Wed, 03 May 2017 00:00:00 +0800</pubDate>
-                <author>冬阳</author>
-            </item>
-        
-    
-        
-            <item>
-                <title>github-pages-搭建成功</title>
-                <link>http://localhost:4000/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</link>
-                <content:encoded>
-                    <![CDATA[
-                    <p>早就有想把平时遇到的问题，还有把自己的知识积累做个总结，但是一直懒于动手，结果是，一些知识时间一长，如果用的不是很频繁的话就比较容易忘记，到写这篇博客的时候好像就有一些知识点就忘记了。前一段时间知道了github pages后就，就在网上找了个模板，修修改改，搞了一两天，笔都对前端不太了解，平时做的都是iOS，看来得找个时间看看前端了。好吧，今天就写这么点了，本来还想写写怎么建立自己的博客，不过网上已有很多相关的博客，这里我发一两篇我参考的吧。</p>
-
-<p><a href="https://github.com/uolcano/blog/issues/11">利用GitHub Pages建立项目或个人网站</a></p>
-
-<p><a href="http://www.zhanxin.info/jekyll/2013-08-07-jekyll-doc-installation.html">Jekyll教程</a></p>
-
-<p>–EOF–</p>
-
-                    ]]>
-                </content:encoded>
-                <guid isPermaLink="false">/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</guid>
-                <description>
-                    
-                    折腾了一两天，终于把博客搭的差不多了。
-                    
-                </description>
-                <pubDate>Thu, 27 Apr 2017 00:00:00 +0800</pubDate>
                 <author>冬阳</author>
             </item>
         

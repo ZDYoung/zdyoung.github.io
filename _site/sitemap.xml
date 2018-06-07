@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>http://localhost:4000/overview/2017/04/27/github-pages-%E6%90%AD%E5%BB%BA%E6%88%90%E5%8A%9F/</loc>
-<lastmod>2017-04-27T00:00:00+08:00</lastmod>
-</url>
-<url>
 <loc>http://localhost:4000/objective-c/afnetworking/2017/05/03/AFNetworking3.0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%95%B0%E6%8D%AE%E8%AF%B7%E6%B1%82/</loc>
 <lastmod>2017-05-03T00:00:00+08:00</lastmod>
 </url>
@@ -43,6 +39,10 @@
 <url>
 <loc>http://localhost:4000/objectvie-c/nsfastenumeration/2018/06/01/NSFastEnumeration-%E5%8D%8F%E8%AE%AE%E5%BF%AB%E9%80%9F%E6%9E%9A%E4%B8%BE/</loc>
 <lastmod>2018-06-01T00:00:00+08:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/objectvie-c/uiview/2018/06/06/UIView%E4%B8%AD%E7%9A%84frame%E4%B8%8Ebounds%E7%9A%84%E5%85%B3%E7%B3%BB/</loc>
+<lastmod>2018-06-06T00:00:00+08:00</lastmod>
 </url>
 <url>
 <loc>http://localhost:4000/about/</loc>
