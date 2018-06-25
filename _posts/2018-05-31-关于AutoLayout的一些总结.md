@@ -403,3 +403,6 @@ iOS 11又引入了一个Safe Area（安全区域）的概念，苹果建议在�
    make.width.height.mas_equalTo(50);
 }];
 ```
+## AutoLayout与Frame
+
+使用AutoLayout时，视图的真实frame在方法``layoutSubviews``内可以得到，如果在设置好约束后是立即拿到frame，则要手动调用``setNeedsLayout``和``layoutIfNeeded``，不手动调用时三个有时``layoutIfNeeded ``不会调用，**但在``UITableViewCell``和``UICollectionViewCell``中，``layoutIfNeeded ``一定会调用，且cell内的子控件的真实frame只有在``layoutIfNeeded ``方法中才能得到，在``layoutSubviews``得不到真实的frame，要需要设置好约束后，某些代码想要用视图的frame，则必需要放在``layoutIfNeeded ``中，**因为此手动调用``setNeedsLayout``和``layoutIfNeeded``方法后，在``layoutSubviews``方法中不能得到frame。
